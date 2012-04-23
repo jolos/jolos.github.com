@@ -149,6 +149,7 @@ $(function(){
 				body : "",
 				folded : true,
 				synced : false,
+				author : "Joris",
 			};
 		},
 
