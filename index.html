@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>jolos.be</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+      <link href='/backbone_blog/static/css/bootstrap.css' rel='stylesheet'>
+      <link href='/backbone_blog/static/css/bootstrap-responsive.css' rel='stylesheet'>
+
+
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+      
+      #items h1.foldable {
+          cursor : pointer;
+      }
+      
+      a.readmore {
+          float : right;
+      }
+      
+      div.well {
+          background-color : rgb(217, 237, 247);
+          padding-left : 60px;
+          }
+       hr.soften {
+          background-image: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
+          background-image:    -moz-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
+          background-image:     -ms-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
+          background-image:      -o-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
+          border: 0 none;
+          height: 1px;
+          margin: 5px 0;
+       }
+     
+     .marketing h1 {
+        font-size: 40px;
+        font-weight: 300;
+        margin: 36px 0 27px;
+        text-align: center;
+    }
+
+    div.marketing {
+	    float : left:
+    }
+    .marketing div.body {
+        color: #999999;
+        font-size: 18px;
+        font-weight: 300;
+        line-height: 24px;
+        margin: auto;
+        text-align: justify;  
+        width : 800px;  
+    }
+    
+    .footer {
+        border-top: 1px solid #E5E5E5;
+        margin-top: 45px;
+        padding: 35px 0 36px;
+    }
+    
+    i.icon-chevron-up {
+        margin : auto;
+        cursor : pointer;
+        text-align : center;
+        display : block;
+        
+    }
+    
+    div.foldable {
+        display : none;
+    }
+
+    div.tags {
+	    position : absolute;
+	    top : -30px;
+	    right : 0px;
+    }
+
+    div.tags span {
+	    cursor : pointer;
+    }
+
+   </style>
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+  </head>
+
+  <body>
+    <div class='container'>
+    <ul class="nav nav-pills">        
+        <li><a href="#">Home</a></li>
+        <li><a href="#about/me">about/me</a></li>
+    <li><a href="http://www.twitter.com/jolos">twitter</a></li>
+    </ul>
+
+    <div id="errors"></div>
+    
+    
+    <div id="header"></div>
+
+       
+    <div id="items"></div>
+
+     <!-- /container -->
+     </div>
+     <div class="container">
+     <footer class="footer">
+     <p>Made with love, with the help of some friends: <a href="http://documentcloud.github.com/backbone/">backbone.js</a>, <a href="http://twitter.github.com/bootstrap"> twitter bootstrap</a>, <a href="http://icanhazjs.com">ICanHaz.js</a> and <a href="http://web2py.com">web2py</a>.<br/> Hosted on <a href="http://appengine.google.com">GAE</a> </p>
+     </footer>
+     </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/backbone_blog/static/js/jquery-1.7.1.js"></script>
+    <script src="/backbone_blog/static/js/json2.js"></script>
+    <script src="/backbone_blog/static/js/underscore-1.3.1.js"></script>
+    <script src="/backbone_blog/static/js/backbone-min.js"></script>
+    <script src="/backbone_blog/static/js/ICanHaz.min.js"></script>
+    <script src="/backbone_blog/static/js/blog.js"></script>
+    <script src="/backbone_blog/static/js/bootstrap-alert.js"></script>
+    <script>
+	    var header_data = {
+				title:	"You've reached jolos.be!",
+				body: "Jolos.be is the personal website of Joris Geessels. If you're here to know more about me, you might want to read <a href='#about/me'>#about/me</a>. If you're not really interested in my person but rather in my thoughts you can have a look at my blogposts. These are listed below. Just click on the title and if everything goes well, you should see a blogpost magically unfold. To read more on the internals of this website check <a href='#about/this_website'>#about/this_website</a>",
+	    };
+    </script>
+
+    <script id="hero" type="text/html">
+        <div class='hero-unit'>
+            <h2>{{title}}</h2>
+	    <p>{{{body}}}</p>
+            </div>
+    </script>
+
+    <script id="alert" type="text/html">
+        <div class="alert alert-error">
+		<a class="close" data-dismiss="alert"><strong>x</strong></a>
+            <strong>{{message}}</strong>
+            {{description}}
+        </div>
+    </script>
+   
+    <!--<script type="text/html" id="item">
+            <div class="well">
+            <h1>  <%= header ? header.capitalize() : '' %> <div class="tags"><% print(tags); %></div></h1>
+            </div>           
+	    {{#unfolded}}
+              <div class='body'>+body+</div>);} %>            
+	    {{/unfolded}}
+    </script>-->
+    	
+        <script type="text/html" id="blog">
+	
+        <div class="marketing" style="position : relative">
+	<div class="tags">
+		{{#tags}}
+			<span class="label label-info">{{tag}}</span>
+		{{/tags}}
+	</div>
+	<h1 class="foldable">{{#header}} {{header}} <br/> <small> written by {{author}} on <span class="year" >{{created_year}}</span>-<span class="month" >{{created_month}}</span>-{{created_day}}</small>{{/header}}  </h1>
+            	  <div class="body foldable">
+			  {{{body}}}
+            		<i class="icon-chevron-up"/>     
+			</div>            
+            <hr class="soften"/>
+        </div>
+    </script>
+  </body>
+</html>

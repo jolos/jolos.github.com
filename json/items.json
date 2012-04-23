@@ -1,0 +1,9 @@
+[
+	{ 
+		"id"	: "1",
+		"type"  : "blog",
+		"header" : "test",
+		"tags"  : ["tag1","tag2"],
+		"created" : "23/04/2012"
+	}
+]
