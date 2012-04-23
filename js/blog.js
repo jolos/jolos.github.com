@@ -36,6 +36,7 @@ $(function(){
 				app_router.route(item.route,item.route,app_router.pageHandler);
 			});
 			Backbone.history.start();
+			$('#loading').hide();
 		},
 
 		// handler to render pages
@@ -67,6 +68,7 @@ $(function(){
 		// TODO : rendering shouldn't happen here, and should use a view
 		renderPage : function(route){
 			// get page by ahah
+			$('#loading').show();
 			$('#header').empty();
 			$('#items').empty();
 			$.ajax({
@@ -74,6 +76,7 @@ $(function(){
 				dataType : 'html',
 				success : function(html){
 					// replace html
+					$('#loading').hide();
 					$("#items").html(html);
 				},
 				error : function(html){

@@ -89,6 +89,43 @@
 	    cursor : pointer;
     }
 
+    #loading {
+    	    width: 104px;
+	    margin-left: auto;
+	    margin-right: auto;
+	    -moz-animation: rotate 1s linear 0s infinite;
+	    -webkit-animation: rotate 1s linear 0s infinite;
+    }
+
+    #loading div {
+        background-color: #F5F5F5;
+	width: 50px;
+	height: 50px;
+	border-radius: 25px 25px 25px 25px;
+	display: inline-block;
+    }
+
+    @-moz-keyframes rotate /* Firefox */
+    {
+    	from {
+		-moz-transform: rotate(0deg);
+	}
+	to {
+		-moz-transform: rotate(360deg);
+	}
+    }
+
+
+    @-webkit-keyframes rotate /* Webkit */
+    {
+    	from {
+		-webkit-transform: rotate(0deg);
+	}
+	to {
+		-webkit-transform: rotate(360deg);
+	}
+    }
+ 
    </style>
 
     <!-- Le fav and touch icons -->
@@ -108,16 +145,24 @@
     </ul>
 
     <div id="errors"></div>
+ 	<div id="loading" >
+		<div class="first"></div>
+		<div class="second"></div>
+		</br>
+		<div class="third"></div>
+		<div class="fourth"></div>
+	</div>  
     
-    
-    <div id="header"></div>
+    <div id="header">
+    </div>
 
        
     <div id="items">
-	    <h2>Loading Javascript code, please wait</h2>
     </div>
 
      <!-- /container -->
+
+
      </div>
      <div class="container">
      <footer class="footer">
@@ -125,7 +170,7 @@
      </footer>
      </div>
 
-    <!-- Le javascript
+         <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
