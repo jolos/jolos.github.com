@@ -2,8 +2,31 @@
 	{ 
 		"id"	: "1",
 		"type"  : "blog",
-		"header" : "test",
-		"tags"  : ["tag1","tag2"],
-		"created" : "23/04/2012"
+		"header" : "A new website",
+		"tags"  : ["site"],
+		"created" : "April 24, 2012"
+	},
+	{ 
+		"id"	: "2",
+		"type"  : "album",
+		"header" : "Kyoto",
+		"tags"  : ["Japan"],
+		"albumid" : "5640612956339008241",
+		"created" : "August 14, 2011"
+	},
+	{ 
+		"id"	: "3",
+		"type"  : "album",
+		"header" : "Tokyo to Wakkanai, and back again",
+		"tags"  : ["Japan"],
+		"albumid" : "5656940123342950849",
+		"created" : "September 27, 2011"
+	},
+	{ 
+		"id"	: "4",
+		"type"  : "blog",
+		"tags"  : ["Japan","iaeste"],
+		"header" : "Two Weeks of Japan",
+		"created" : "July 27, 2011"
 	}
 ]

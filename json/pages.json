@@ -1,3 +1,4 @@
 [
-	{ "route" : "about/me"}
+	{ "route" : "about/me"},
+	{ "route" : "about/this_website"}
 ]
