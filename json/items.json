@@ -28,5 +28,13 @@
 		"tags"  : ["Japan","iaeste"],
 		"header" : "Two Weeks of Japan",
 		"created" : "July 27, 2011"
+	},
+	{ 
+		"id"	: "5",
+		"type"  : "album",
+		"tags"  : ["Japan"],
+		"header" : "Tokyo",
+		"albumid" : "5627361003486091553",
+		"created" : "July 9, 2011"
 	}
 ]
