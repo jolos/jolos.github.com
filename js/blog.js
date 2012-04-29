@@ -110,6 +110,15 @@ $(function(){
 				return new Blog(attributes);
 			},
 		},
+		'album' : { 
+			view : function(item){
+				return new AlbumView({ model :item});
+			},
+			model : function(attributes){
+				return new Album(attributes);
+			},
+		},
+
 		'item' : {
 			view : function(item) {
 				return new ItemView({ model : item });
@@ -120,6 +129,11 @@ $(function(){
 		},
 	}
 
+	/**
+	 *
+	 * Models
+	 *
+	 **/
 
 	// Abstract Item, in most cases we want to override this
 	window.Item = Backbone.Model.extend({
@@ -137,7 +151,7 @@ $(function(){
 		// parse should only get called on a update, so we use extend 
 		// normally this won't be called as you want to override this
 		parse : function(response){
-			return _.extend(this.attributes,response.items);
+			return _.extend(this.attributes,response);
 		},
 	});
 
@@ -160,16 +174,48 @@ $(function(){
 		parse : function(response){
 			 // the json format doesn't allow for line endings, we work around this by
 			 // providing a list of strings
-			 response.body = response.body.join('<br/>');
+			 response.body = response.body.join('<br/><br/>');
 			 return _.extend(this.attributes,response);
 		},
 	});
 
+	window.Album = Backbone.Model.extend({
+
+		url : 'http://www.google.be',
+		
+		defaults: function(){
+			return {
+				title : "",
+				albumid : "",
+				photos : new PhotoList,
+			};
+	       	},
+	});
+
+	window.Photo = Backbone.Model.extend({
+		
+		defaults: function(){
+			return {
+				src : "",
+			};
+	       	},
+	});
+
+	/** 
+	 *
+	 * Collections
+	 *
+	 **/
 	window.ItemList = Backbone.Collection.extend({
 		// the model is the Abstract Item model
 		model : Item,
-		// a HTTP GET to the following url, will return all items, serialized as JSON
-		url : 'json/items.json',
+		// a HTTP GET to the following url, will return all items, serialized as JSON 
+		url : 'json/items.json', 
+
+		comparator : function(item){
+			var created_date = new Date(item.get('created'));
+			return -created_date.getTime(); 
+		},
 
 		parse : function(response){
 			var items = new Array();
@@ -181,7 +227,17 @@ $(function(){
 	});
 
 
+	window.PhotoList = Backbone.Collection.extend({
+		model : Photo
+	});
+
 	window.Items = new ItemList;
+
+	/**
+	 * 
+	 * Views
+	 *
+	 **/
 
 	// Abstract ItemView, in most cases we want to override this 
 	var ItemView = function(options){
@@ -211,7 +267,7 @@ $(function(){
 
 		preprocess : function(model){
 			return {
-				header : model.get('header'),
+				header : model.get('header').capitalize(),
 				created : model.get('created'),
 				updated : model.get('updated'),
 				author : model.get('author'),
@@ -222,27 +278,61 @@ $(function(){
 
 	ItemView.extend = Backbone.View.extend;
 
+        var FoldableItemView =function(options){
+		Backbone.View.apply(this,[options]);
+	};
 
-	window.BlogView = ItemView.extend({
+	FoldableItemView.extend = Backbone.View.extend;
+
+	/* extend ItemView */ 
+	_.extend(FoldableItemView.prototype, ItemView.prototype,{
 		// define the blog specific events
 		events : {
-			"click h1" 	: "toggleFold",
-			"click i.icon-chevron-up" : "toggleFold",
-			"click div.tags span" : "filterOnTag",
+			"click .fold" 	: "toggleFold",
 		},
 
+		fold : function(){
+			this.$('.foldable').slideToggle('slow');
+			this.folded = !this.folded;
+		},
+
+		/* default toggle Callback */
+		foldOpenCallback : function(){
+			return true;
+		},
+		
+		foldCloseCallback : function(){
+			return true;
+		},
+
+		toggleFold : function() {
+			if(this.folded){
+				if(this.foldOpenCallback()){
+					this.fold();
+				}
+			} else {
+				// if we already did a fetch before, don't do a second one
+				if(this.foldCloseCallback()){
+					this.fold();
+				}
+			}
+		},
+	
+	});
+
+	window.BlogView = FoldableItemView.extend({
 		// override initialize function
+		events : {
+			"click .fold" 	: "toggleFold",
+			'click div.tags span': 'filterOnTag'
+		},
+
 		initialize : function(){
 			// when the model has been synced we want to rerender and then fold
 			this.model.bind('change:synced',function(){ this.render(); this.fold(); }, this);
 			this.model.bind('destroy', this.remove, this);
+			this.bind('click div.tags span',this.filterOnTag,this);
 			this.folded = true
-		},
-
-		// function to animate fold
-		fold : function(){
-			this.$('div.body').slideToggle('slow');
-			this.folded = !this.folded;
 		},
 
 		filterOnTag : function(ctx){
@@ -256,9 +346,9 @@ $(function(){
 			window.App.refresh();
 		},
 
-
-		toggleFold : function() {
+		foldOpenCallback : function() {
 			if(!this.model.get('synced')){
+				var view = this;
 				// only do a fetch if we haven't synced before
 				this.model.fetch({
 					success: function(model,response){
@@ -269,10 +359,11 @@ $(function(){
 					},
 				});
 			} else {
-				// if we already did a fetch before, don't do a second one
-				this.fold();
+				return true;
 			}
+
 		},
+
 
 		preprocess : function(model){
 			var tags =[];
@@ -280,10 +371,10 @@ $(function(){
 				tags.push({'tag':tag}); 
 			});
 
-			var created_date = new Date(model.get('created').split(' ')[0]);
+			var created_date = new Date(model.get('created'));
 
 			return {
-				header : model.get('header'),
+				header : model.get('header').capitalize(),
 				created_year : created_date.getFullYear(),
 				created_month : created_date.getMonth(),
 				created_day : created_date.getDate(),
@@ -296,6 +387,86 @@ $(function(){
 		
 	});
 
+
+	window.AlbumView = FoldableItemView.extend({
+		// override initialize function
+		initialize : function(){
+			// when the model has been synced we want to rerender and then fold
+			this.model.get('photos').bind('add',function(){ this.render();}, this);
+			//this.model.bind('change',function(){ this.fetchPhotos(); this.render();}, this);
+			this.model.bind('destroy', this.remove, this);
+			this.uid = "103884336232903331378";
+			this.baseurl = 'https://picasaweb.google.com/data/feed/api/user/';
+			this.fetchPhotos(6);
+			this.max = 5;
+			this.folded = true;
+		},
+
+		url : function(amount){
+			imgmax=160;
+			url=this.baseurl + this.uid + '/albumid/' + this.model.get('albumid') + '?alt=json&imgmax='+imgmax;
+			if(amount != undefined){
+				url = url + '&max-results=' + amount;
+			}
+			return url;
+		},
+
+		fetchPhotos : function(amount){
+			$.ajax({
+				url : this.url(amount),
+				dataType : 'json',
+				context : this,
+				success : this.addPhotos,
+				error : function(data){
+					Error('Oops','Something went wrong, not everything will work as it should');
+				},
+			});
+		},
+
+		foldOpenCallback : function() {
+			this.fetchPhotos();
+			this.max = Number.MAX_VALUE;
+			return true;
+		},
+
+		foldCloseCallback : function(){
+			// refresh
+			this.max = 5;
+			this.render();
+			return true;
+		},
+
+		addPhotos : function(jsonresponse){
+			var photolist = this.model.get('photos');
+			photos = jsonresponse.feed.entry;
+			$.each(photos,function(i,item){
+				photolist.add(new Photo({src: item.content.src, href: item.link[1].href}));
+			});
+		},
+
+		preprocess : function(model){
+			var photos =[];
+			var max =  this.max;
+			model.get('photos').each(function(item,i){
+				if(photos.length < max){
+					photos.push({ 'src' : item.get('src'), href: item.get('href')});
+				}
+			});
+
+			var tags =[];
+			$.each(model.get('tags'),function(i,tag){
+				tags.push({'tag':tag}); 
+			});
+
+			return {
+				'header' : this.model.get('header'),		
+				'photos' : photos,
+				tags : tags,
+				// not really working yet -->'folded' : this.folded,
+			};
+		},
+	});
+
 	window.AppView = Backbone.View.extend({
 		el: $('div.container'),
 
@@ -304,6 +475,7 @@ $(function(){
 		initialize : function() {
 			Items.bind('reset', this.render, this);
 			Items.fetch();
+			Items.sort();
 		},
 
 
@@ -317,7 +489,8 @@ $(function(){
 				var view = new ItemView({ model : item });
 			}
 
-			$("#items").append(view.render().el);
+			html = view.render().el;
+			$("#items").append(html);
 		},
 
 
@@ -346,11 +519,11 @@ $(function(){
 	});
 
 
+
 	var app_router = new Router;
 
 	app_router.on('route',function(page){
 		$("#errors").empty();
-
 	});
 
 	var bindLinks = function(el){

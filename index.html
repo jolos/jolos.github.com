@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>jolos.be</title>
+    <title>jolos.github.com</title>
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -19,7 +19,7 @@
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
       
-      #items h1.foldable {
+      #items .fold {
           cursor : pointer;
       }
       
@@ -75,7 +75,7 @@
         
     }
     
-    div.foldable {
+    .foldable {
         display : none;
     }
 
@@ -134,7 +134,7 @@
     <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
     
-    <script type="text/javascript">
+<!--    <script type="text/javascript">
 	  var _gaq = _gaq || [];
   	_gaq.push(['_setAccount', 'UA-31149655-1']);
   	_gaq.push(['_trackPageview']);
@@ -145,7 +145,7 @@
 	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 	  })();
 
-    </script>
+  </script>-->
 
   </head>
 
@@ -153,8 +153,9 @@
     <div class='container'>
     <ul class="nav nav-pills">        
         <li><a href="#">Home</a></li>
-        <li><a href="#about/me">about/me</a></li>
-    <li><a href="http://www.twitter.com/jolos">twitter</a></li>
+        <li><a href="#about/me">About/me</a></li>
+    <li><a href="http://www.twitter.com/jolos">Twitter</a></li>
+    <li><a href="https://picasaweb.google.com/103884336232903331378">Picasa</a></li>
     </ul>
 
     <div id="errors"></div>
@@ -194,8 +195,8 @@
     <script src="js/bootstrap-alert.js"></script>
     <script>
 	    var header_data = {
-				title:	"You've reached jolos.be!",
-				body: "Jolos.be is the personal website of Joris Geessels. If you're here to know more about me, you might want to read <a href='#about/me'>#about/me</a>. If you're not really interested in my person but rather in my thoughts you can have a look at my blogposts. These are listed below. Just click on the title and if everything goes well, you should see a blogpost magically unfold. To read more on the internals of this website check <a href='#about/this_website'>#about/this_website</a>",
+				title:	"You've reached my website!",
+				body: "This is my personal website and me that's Joris Geessels. If you're here to know more about me, you might want to read <a href='#about/me'>#about/me</a>. If you're not really interested in my person but rather in my thoughts you can have a look at my blogposts. These are listed below. Just click on the title and if everything goes well, you should see a blogpost magically unfold. To read more on the internals of this website check <a href='#about/this_website'>#about/this_website</a>",
 	    };
     </script>
 
@@ -206,6 +207,25 @@
             </div>
     </script>
 
+    <script id="album" type="text/html">
+        <div class="marketing" style="text-align:center">
+	<div class="tags">
+		{{#tags}}
+			<span class="label label-info">{{tag}}</span>
+		{{/tags}}
+	</div>
+		<h1>{{header}}<br></h2>
+            		     
+	    <div class="photos" style="max-width: 820px; margin : auto">
+	    {{#photos}}
+	    <a href={{href}}> <img src={{src}} /></a>
+	    {{/photos}}
+    </div> <h1 style="margin-top : 0px; margin-bottom: 10px;"><small class="fold">(expand/close)</small></h1>
+            <hr class="soften"/>
+    </div>
+    </script>
+
+
     <script id="alert" type="text/html">
         <div class="alert alert-error">
 		<a class="close" data-dismiss="alert"><strong>x</strong></a>
@@ -214,19 +234,18 @@
         </div>
     </script>
 
-       <script type="text/html" id="blog">
-	
+    <script type="text/html" id="blog">
         <div class="marketing" style="position : relative">
 	<div class="tags">
 		{{#tags}}
 			<span class="label label-info">{{tag}}</span>
 		{{/tags}}
 	</div>
-	<h1 class="foldable">{{#header}} {{header}} <br/> <small> written by {{author}} on <span class="year" >{{created_year}}</span>-<span class="month" >{{created_month}}</span>-{{created_day}}</small>{{/header}}  </h1>
+	<h1 class="fold">{{#header}} {{header}} <br/> <small> Written by {{author}} on <span class="year" >{{created_year}}</span>-<span class="month" >{{created_month}}</span>-{{created_day}}</small>{{/header}}  </h1>
             	  <div class="body foldable">
 			  {{{body}}}
-            		<i class="icon-chevron-up"/>     
-			</div>            
+            		<i class="icon-chevron-up fold"/>     
+		</div>            
             <hr class="soften"/>
         </div>
     </script>
