@@ -12,7 +12,6 @@ $(function(){
 
 	var Router = Backbone.Router.extend({
 		routes: {
-	    		"blog/:id":	"blog",
           "*actions": 		"default",
 		},
 
@@ -35,7 +34,7 @@ $(function(){
         return _gaq.push(['_gaview', "/" + url]);
     },
 
-	    	// callback to add routes for all pages
+    // callback to add routes for all pages
     addPages : function(data){
 			$.each(data,function(i,item){
 				// TODO : ugly
@@ -60,7 +59,11 @@ $(function(){
 				this.renderPage(actions);
 			} else if(!(window.App instanceof AppView)){
 				// this means we either don't have a AppView yet or that it has been replaced by another View objec
-				// i.e. a PageView
+        // render header
+        hero = ich.hero(header_data);
+        $("#header").html(hero);
+        // we have to rebind the links as this is brand new html
+        bindLinks($("#header"));
 				window.App = new AppView;
 				if( actions != ""){
 					Error(""+actions+" doesn't exist!","You're trying to visit a page that doesn't exist, redirecting you to home");
@@ -90,18 +93,6 @@ $(function(){
 				},
 			});
 		},
-
-	    	blog: function(id){
-			window.App.removeAll();
-			// get the corresponding model
-			item = Items.get(id)
-			// create view
-			view = new BlogView({ model : item});
-			// place the generated html on the page
-			$("#items").html(view.render().el);
-		},
-
-
 	});
 
 
@@ -372,9 +363,9 @@ $(function(){
 
 		preprocess : function(model){
 			var tags =[];
-			$.each(model.get('tags'),function(i,tag){
+			/*$.each(model.get('tags'),function(i,tag){
 				tags.push({'tag':tag}); 
-			});
+			});*/
 
 			var created_date = new Date(model.get('created'));
 
@@ -514,11 +505,6 @@ $(function(){
 		},
 
 		render: function(){
-			// render header
-			hero = ich.hero(header_data);
-			$("#header").html(hero);
-			// we have to rebind the links as this is brand new html
-			bindLinks($("#header"));
 			this.addAll();
 			},
 	});
