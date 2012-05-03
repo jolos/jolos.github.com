@@ -13,24 +13,30 @@ $(function(){
 	var Router = Backbone.Router.extend({
 		routes: {
 	    		"blog/:id":	"blog",
-			"*actions": 		"default",
+          "*actions": 		"default",
 		},
 
-	    	initialize : function(options){
-			this.pages = new Array();
-			$.ajax({
-				url : 'json/pages.json',
-				dataType : 'json',
-				success : this.addPages,
-				error : function(data){
-					Error('Oops','Something went wrong, not everything will work as it should');
-				},
-			});
+    initialize : function(options){
+        this.bind('all',this._gatrack);
+        this.pages = new Array();
+        $.ajax({
+          url : 'json/pages.json',
+          dataType : 'json',
+          success : this.addPages,
+          error : function(data){
+            Error('Oops','Something went wrong, not everything will work as it should');
+          },
+        });
 		},
 
+    _gatrack : function() {
+        var url;
+        url = Backbone.history.getFragment();
+        return _gaq.push(['_gaview', "/" + url]);
+    },
 
 	    	// callback to add routes for all pages
-	    	addPages : function(data){
+    addPages : function(data){
 			$.each(data,function(i,item){
 				// TODO : ugly
 				app_router.route(item.route,item.route,app_router.pageHandler);
@@ -41,12 +47,11 @@ $(function(){
 
 		// handler to render pages
 		pageHandler : function(actions){
-			// this is a bit hackish, but seems to be the only way to get the current route
-			var route= window.document.location.hash;
-			this.renderPage(route.substring(1));
+			var route= Backbone.history.getFragment();
+			this.renderPage(route);
 		},
 
-	    	default: function(actions){
+    default: function(actions){
 			// TODO cleaning should be done with proper events
 			$('#header').empty();
 			$('#items').empty();
