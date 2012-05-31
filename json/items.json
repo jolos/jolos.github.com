@@ -37,4 +37,12 @@
 		"albumid" : "5627361003486091553",
 		"created" : "July 9, 2011"
 	}
+	{ 
+		"id"	: "6",
+		"type"  : "album",
+		"tags"  : [],
+		"header" : "Spring 2012",
+		"albumid" : "103884336232903331378",
+		"created" : "May 27, 2012"
+	}
 ]
