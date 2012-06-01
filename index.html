@@ -10,6 +10,8 @@
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+  
+
     <link href='css/bootstrap.css' rel='stylesheet'>
     <link href='css/bootstrap-responsive.css' rel='stylesheet'>
     <script src='js/underscore-min.js'></script>
@@ -168,6 +170,52 @@
   </head>
 
   <body>
+    <div class="canvascontainer" style="position: absolute; top:0; left:0; width : 100%; z-index: -1;">
+	    <canvas id="sinus" height="130" ></canvas>  
+	     <script type="text/javascript">  
+		  function draw(){  
+		    var canvas = document.getElementById('sinus');  
+		    if (canvas.getContext){  
+		      var ctx = canvas.getContext('2d');  
+		      canvas.width=window.innerWidth;
+		      drawSinus(ctx,"rgba(0, 136, 204, 0.1)",0,60); 
+		      drawSinus(ctx,"rgba(0, 136, 204, 0.1)",0,60); 
+		      drawSinus(ctx,"rgba(0, 136, 204, 0.1)",0,60); 
+		      drawSinus(ctx,"rgba(245, 245, 245, 0.5)",0,60); 
+		      drawSinus(ctx,"rgba(245, 245, 245, 0.5)",0,60); 
+		    }  
+		  }  
+
+		  function drawSinus(ctx,colorstr,posx,posy){
+		      var y = posy;
+		      var x = posx;
+		      ctx.fillStyle = colorstr;
+		      ctx.beginPath();  	
+		      ctx.moveTo(x,y+30);
+		      var w = window.innerWidth;
+		      while( x < w){
+			      xn =x + 100;
+			      yn =posy + 20*(Math.random()-0.1)+60*Math.sin(xn/(w*2/3)*Math.PI);
+			      y= yn; 
+			      x = xn;
+			      ctx.lineTo(x,y);
+		      }
+
+		      y= y - 40;
+		      ctx.lineTo(x,y);
+
+		      while( x > 0) {
+			      xn =x-100;
+			      yn =posy - 20*(Math.random()-0.1)+60*Math.sin(xn/(w*2/3)*Math.PI);
+			      y = yn;
+			      x = xn;
+			      ctx.lineTo(x,y);
+		      }
+		      ctx.fill();
+		  }
+		  draw();
+		</script>
+    </div>
     <div class='container'>
     <ul class="nav nav-pills">        
         <li><a href="#">Home</a></li>

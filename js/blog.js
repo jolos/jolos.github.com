@@ -51,6 +51,7 @@ require(["jquery",'json2-min','backbone-min','mustache'], function($){
       },
 
       default: function(actions){
+        draw();
         // TODO cleaning should be done with proper events
         $('#header').empty();
         $('#items').empty();
