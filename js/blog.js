@@ -1,4 +1,4 @@
-require(["jquery",'json2-min','underscore-min','backbone-min','mustache'], function($){
+require(["jquery",'json2-min','backbone-min','mustache'], function($){
 
   $(function() {
     window.Error = function(message,description){
