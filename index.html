@@ -170,7 +170,7 @@
   </head>
 
   <body>
-    <div class="canvascontainer" style="position: absolute; top:0; left:0; width : 100%; z-index: -1;">
+    <div class="canvascontainer" style="overflow: hidden;position: absolute; top:0; left:0; width : 100%; z-index: -1;">
 	    <canvas id="sinus" height="130" ></canvas>  
 	     <script type="text/javascript">  
 		  function draw(){  
@@ -218,8 +218,8 @@
     </div>
     <div class='container'>
     <ul class="nav nav-pills">        
-        <li><a href="#">Home</a></li>
-        <li><a href="#about/me">About/me</a></li>
+	<li><a href="#" onclick="draw()" style="font-weight: bold;background-color: transparent; font-size: 150%" title="Home">#</a></li>
+        <li><a href="#about/me" onclick="draw()" >About/me</a></li>
     <li><a href="http://www.twitter.com/jolos">Twitter</a></li>
     <li><a href="https://picasaweb.google.com/103884336232903331378">Picasa</a></li>
     </ul>
