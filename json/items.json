@@ -44,5 +44,12 @@
 		"header" : "Spring 2012",
 		"albumid" : "5747225798223722337",
 		"created" : "May 27, 2012"
+	},
+	{ 
+		"id"	: "7",
+		"type"  : "blog",
+		"tags"  : ["scala","tech"],
+		"header" : "Realtime Searching of logstash",
+		"created" : "June 7, 2012"
 	}
 ]
