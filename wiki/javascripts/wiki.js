@@ -42,6 +42,10 @@ $(function() {
     /**
      * Views
      **/
+  
+   /**
+	* a little factory to make views for a model
+	**/
     window.ViewFactory = function() {
     };
 
