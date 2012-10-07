@@ -1,157 +1,313 @@
 $(function() {
 
-    window.Item = Backbone.Model.extend({
+    /**
+     * Errors
+     **/
+    window.Error = Backbone.Model.extend({
       defaults : function(){
         return {
-          name : "",
-          size : "",
-          path : "",
-          type : "file",
+          msg : "Something went wrong",
         };
-      }
+      },
     });
 
-    window.ItemView = Backbone.View.extend({
-      tagName : "dd",
-
-      events : {
-       'click a' : 'onClick',
+    window.NoRouteError = Error.extend({
+      defaults : function(){
+        return {
+          msg : "Couldn't find route to path",
+          path: "path",
+          parent: window.master,
+        };
       },
+    });
 
-      onClick : function(ctx) {
-        if(this.model.get('type') == "dir"){
-          window.lst.setDir(this.model.get("item"));
-        } else {
-          window.page.setModel(this.model);
-        }
-      },
-
-      template : {
-        file: "<a href='#'>{{name}}</a>",
-        dir: "<a href='#'>{{name}}</a>",
-      },
+    window.ErrorView = Backbone.View.extend({
+      template : "<div class='alert-box alert'>{{msg}}<a class='close' href=''>x</a></div>",
 
       render : function(){
-        var type = this.model.get('type');
-        var data = this.preprocess(this.model);
-        html = Mustache.render(this.template[type],data);
+        var data = {
+          'msg' : this.model.get('msg'),
+        }
+
+        html = Mustache.render(this.template,data);
         $(this.el).html(html);
         return this;
       },
 
-      preprocess : function(model){
-        return {
-          'name' : model.get('name'),
-          'path' : model.get('path'),
-        };
+      clean : function(){
+        $(this.el).empty();
       },
     });
 
+    /**
+     * Views
+     **/
+    window.ViewFactory = function() {
+    };
+
+    _.extend(ViewFactory.prototype,{
+      views : [],
+
+      getView : function(model){
+        var tuple = _.find(this.views, function(tuple){
+          return model instanceof tuple.model;
+        });
+
+        var view = new tuple.view({model: model});
+        return view;
+      },
+
+      register : function(modelobj, viewobj) {
+        var tuple ={'view': viewobj, 'model': modelobj};
+        this.views.push(tuple);
+        if (!$.inArray(tuple,this.views)){
+        }
+      },
+    });
+
+    /**
+     * View for visualising Directories
+     **/
+    window.DirView = Backbone.View.extend({
+      tagName : "table",
+
+      template: "<thead><tr><th>Name</th><th>Type</th></thead><tbody>{{#rows}}<tr><td><a href='#{{path}}'>{{name}}</a></td><td>{{type}}</td></tr>{{/rows}}</tbody>",
+
+      render : function(){
+        var data = {
+            'rows' : [],
+        };
+        $.each(this.model.get('children'),function(i,child){
+          data['rows'].push({
+            'name' : child.get('value').name,
+            'type' : child.get('value').type,
+            'path' : child.get('value').path,
+          });
+        });
+
+        html = Mustache.render(this.template,data);
+        $(this.el).html(html);
+        return this;
+      },
+    });
+
+    /**
+     * View for visualising (markdown) Files
+     **/
     window.FileView = Backbone.View.extend({
       tagName : "div",
 
       template : "<a class='small secondary button' href='http://prose.io/#{{user}}/{{repo}}/edit/{{branch}}/{{path}}'>Edit with prose.io</a> {{{body}}}",
 
-      setModel : function(model){
-        this.model = model;
-        var file = model.get("item");
-        var body = "";
-        var that = this;
-        file.fetchContent(function (err, res) {
-                  if(err) { throw "outch ..." }
-                  var raw = file.getRawContent();
-                  // TODO : add pluggable file handlers
-                  body = marked(raw);
-                  that.render({
-                    "body" : body,
-                    "user" : file.user.login,
-                    "repo" : file.repositoryName,
-                    "branch" : file.branchName,
-                    "path" : file.path,
-                  });
-        });
-      },
+      render : function(){
+        var file = this.model.get("value");
+        var raw = file.getRawContent();
+        // TODO : add pluggable file handlers
+        body = marked(raw);
+        var data = {
+          "body" : body,
+          "user" : file.user.login,
+          "repo" : file.repositoryName,
+          "branch" : file.branchName,
+          "path" : file.path,
+        };
 
-      render : function(data){
-        if (this.model) {
-          var html = Mustache.render(this.template,data);
-          console.log(html);
-          $(this.el).html(html);
-        } else {
-          $(this.el).html("");
-        }
+        var html = Mustache.render(this.template,data);
+        $(this.el).html(html);
+      
         return this;
       },
-
-      preprocess : function(model){
-        // TODO fetch content
-             },
     });
 
-    window.ItemList = Backbone.Collection.extend({
-      model: Item,
+    /**
+     * View for visualising a Breadcrumb
+     **/
+    window.BreadCrumbNodeView = Backbone.View.extend({
+      tagName: "li",
+
+      template: "<a href='#{{path}}'>{{name}}</a>",
+
+      render : function() {
+        var data = {
+          'name' : this.model.get('value').name,
+          'path' : this.model.get('value').path,
+        };
+        
+        var html = Mustache.render(this.template, data);
+        $(this.el).html(html);
+        return this;
+      },
     });
 
-    window.ItemListView = Backbone.View.extend({
-      el: $('dl'),
+    /**
+     * View for visualising a list of Breadcrumbs
+     **/
+    window.BreadCrumbView = Backbone.View.extend({
+      el: $('ul.breadcrumbs'),
 
       initialize : function() {
-        this.items = new ItemList;
-        this.items.bind("add",this.addItem);
-        //TODO add bindings
-        //TODO 
-        var items = this.items;
-        this.items.currentDir = window.master;
-        master.fetchContents(function(err,res) {
-          master.eachContent(function (content) {
-            var item = new Item({
-              "name" : content.name,
-              "type" : content.type,
-              "path" : content.path,
-              "item" : content,
-            });
-            items.push(item);
-          });
-        });   
+        this.nodes = new NodeList;
+        this.nodes.bind("add", this.addNode,this);
+        this.nodes.bind("reset",this.clean,this);
       },
 
-      addItem : function(item){
-        // render the item  and add
-        var view = new ItemView({ model : item });
-        html = view.render().el;
-        $("#tree").append(html);
+      addNode : function(node){
+        var view = new BreadCrumbNodeView({ model: node}); 
+        var html = view.render().el;
+        $(this.el).prepend(html);
       },
 
-      setDir: function(dir){
-        //this.items.unbind();
-        //this.items = list;
-        //this.items.bind("add",this.addItem);
-        // TODO for now we do a reset & fetch everytime
-        // but we should use a proper tree here, for caching
-        this.items.reset();
-        $('#tree').empty();
-        var parentdir = this.items.currentDir;
-        this.items.currentDir = dir;
-        this.items.push(new Item({
-          "name" : "..",
-          "type" : "dir",
-          "path" : parentdir.path,
-          "item" : parentdir,
-        }));
-        var items = this.items;
-        dir.fetchContents( function(err,res){
-          dir.eachContent( function(content){
-            var item = new Item({
-              "name" : content.name,
-              "type" : content.type,
-              "path" : content.path,
-              "item" : content,
-            });
-            items.push(item);
-          });
+      clean : function(){
+        $(this.el).empty();
+      },
+
+      render : function() {
+        var that = this;
+        this.nodes.each(function(node){
+          that.addNode(node);
+        });
+        return this;
+      },
+    });
+
+    /**
+     * Router ( connects all the pieces together )
+     **/
+    window.Router = Backbone.Router.extend({
+
+      routes: {
+        "*actions" : "default",
+      },
+
+      initialize : function(){
+        this.factory = new ViewFactory();
+        this.factory.register(DirNode,DirView);
+        this.factory.register(FileNode,FileView);
+        this.factory.register(Error,ErrorView);
+      },
+
+      default : function(actions){
+        // This function connects all the parts
+        var path = _.filter(actions.split("/"),function(str){ return str });
+        path.unshift('master');
+        var that = this;
+        this.tree.navigate(path,{
+          success: function(node) {
+            window.breadcrumbs.nodes.setTail(node);
+            var value = node.get('value');
+            var view = that.factory.getView(node);
+            $('#main').html(view.render().el);
+          },
+          error: function(error){
+            if( error instanceof NoRouteError){
+                var parent = error.get('parent');
+                window.breadcrumbs.nodes.setTail(parent);
+                var view = that.factory.getView(parent);
+                var errorview = that.factory.getView(error);
+                $('#main').html(view.render().el);
+                $('#main').prepend(errorview.render().el);
+            }
+            console.log(error);
+          },
         });
       },
     });
+
+    /**
+     * Models
+     **/
+    window.Node = Backbone.Model.extend({
+      defaults : function() {
+        return {
+          parent  : undefined,
+          children: [],
+          value   : "",
+          fetched : false,
+        };
+      },
+
+      getChildren: function(success,args) {
+          throw new Error({msg: "No instances of Node should be created"});
+      },
+
+      navigate : function(path,callback) {
+        var value = this.get('value');
+        var children = this.get('children');
+        if(this.get('fetched')){
+         // we have already fetched the children before
+           path.shift();
+           if(path.length == 0){
+             callback.success(this);
+             //result.getChildren(callback.success,[result]);
+           } else {
+             // we didn't reach the end of the path yet
+             var result = _.find(children,function(child) {
+               return child.get('value').name == path[0];
+             });
+
+            if(result){
+               result.navigate(path,callback);
+            } else {
+               callback.error(new NoRouteError({path: path, parent: this}));
+            }
+           }
+        } else {
+          // children have not been fetched
+          this.getChildren(this.navigate,[path,callback]);
+        }
+      },
+    });
+
+    window.DirNode = Node.extend({
+
+      getChildren: function(success,args) {
+          var that = this;
+          var value = this.get('value');
+          value.fetchContents( function(err,res){
+            value.eachContent( function(content){
+              if ( content.type == 'file') {
+                that.get('children').push(new FileNode({parent: that,value: content}));
+              } else {
+                that.get('children').push(new DirNode({parent: that,value: content}));
+              }
+            });
+            // fetching children finished, we call method again on this node
+            that.set('fetched',true);
+            success.apply(that,args);
+          });
+      },
+
+    });
+
+    window.FileNode = Node.extend({
+
+      getChildren: function(success,args) {
+          var that = this;
+          var value = this.get('value');
+          console.log("fetching children of: " + this.get('value').name);
+          // TODO : do this with overriding
+          value.fetchContent(function (err, res) {
+              if(err) { throw new Error({msg: "smth went wrong while fetching contents"}) };
+              that.set('fetched',true);
+              success.apply(that,args);
+          });
+      }
+   
+    });
+
+    window.NodeList = Backbone.Collection.extend({
+      item: Node,
+
+      setTail : function(tail){
+        this.reset();
+        do {
+          this.add(tail);
+        } while(tail = tail.get('parent'));
+      },
+    });
+
+     //initialize everything
+    window.breadcrumbs = new BreadCrumbView();
 
     window.github_user = "jolos";
     window.github_repo = "wiki";
@@ -161,14 +317,10 @@ $(function() {
     repo.fetch(function (err,res) {
       repo.fetchBranches( function(err,res) {
         window.master = repo.getBranchByName("master");
-        window.lst = new ItemListView;
-        window.page = new FileView(new Item({}));
-        $('#main').html(window.page.render({"body" : "hello"}).el);
+        window.router = new Router;
+        // point the router to the master directory 
+        window.router.tree = new DirNode({value: window.master});
+        Backbone.history.start();
       });
     });
-
-    
-
 });
-
-
