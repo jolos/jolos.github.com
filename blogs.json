@@ -1,0 +1,20 @@
+[
+	{ 
+    	"id" : "a-new-website.blog.md",
+		"title" : "A new website",
+		"tags"  : ["site"],
+		"created" : "April 24, 2012"
+	},
+	{ 
+		"id"	: "two-weeks-of-japan.blog.md",
+		"tags"  : ["Japan","iaeste"],
+		"title" : "Two Weeks of Japan",
+		"created" : "July 27, 2011"
+	},
+	{ 
+		"id"	: "realtime-searching-logstash.blog.md",
+		"tags"  : ["scala","tech"],
+		"title" : "Realtime Searching of logstash",
+		"created" : "June 7, 2012"
+	}
+]
