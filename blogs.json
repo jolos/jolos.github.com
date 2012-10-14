@@ -1,6 +1,6 @@
 [
 	{ 
-    	"id" : "a-new-website.blog.md",
+		"id" : "a-new-website.blog.md",
 		"title" : "A new website",
 		"tags"  : ["site"],
 		"created" : "April 24, 2012"
