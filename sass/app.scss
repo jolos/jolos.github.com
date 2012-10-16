@@ -1,0 +1,139 @@
+// You custom settings file to override Foundation defaults
+@import "settings";
+
+// Comment out this import if you are customizing you imports below
+@import "foundation";
+
+header {
+	background-color : #FF6633;
+
+	h1 {
+		color : #FFFFFF;
+		font-weight: 300;
+		font-family : "OpenSans", "Helvetica Neue", "Helvetica", Arial, Verdana, sans-serif;
+	}
+
+	h5 {
+		color : #FFFFFF;
+		font-weight: 300;
+	}
+
+	div.external-links {
+		float : right;
+	}
+
+	ul.link-list {
+		margin-top : 0.1em;
+		margin-right : 0.5em;
+
+		li {
+			margin-left: 10px;
+		}
+
+		a:hover, a {
+			font-weight : 500;
+			font-size : small;
+			color : #FFFFFF;
+		}
+	}
+}
+
+ul.link-list  {
+		margin-top : 1em;
+
+		font-weight: 500;
+		font-size: 500;
+
+		a:hover, a {
+			color : #FF6633;
+		}
+}
+
+.title {
+	h4 {
+		color : #FF6633;
+		font-weight: 300;
+		font-size: 300;
+		cursor : pointer;
+	}
+}
+
+div.open {
+	.placeholder {
+		width : 0;
+	}
+
+}
+
+ul.meta {
+
+	width : 25%;
+
+	p {
+		color : #4F4F4F;
+	}
+
+	li {
+	   border-top: 1px dotted #CCCCCC;
+	   list-style: none outside none;
+	   padding: 5px 25px 5px 0;
+	   float: left;
+	}
+}
+
+.title {
+	height : 4em;
+}
+
+div.closed {
+
+	.meta {
+		display : none;
+	}
+}
+
+div.start {
+	.meta {
+		display : none;
+	}
+}
+// ----------------------------------------
+// Import specific parts of Foundation by commenting the import "foundation"
+// and uncommenting what you want below. You must uncomment the following if customizing
+
+// @import "compass/css3";
+// @import "foundation/settings";
+// @import "foundation/functions/all";
+// @import "foundation/common/globals";
+// @import "foundation/mixins/clearfix";
+// @import "modular-scale";
+
+// Control which mixins you have access too
+
+// @import "foundation/mixins/css-triangle";
+// @import "foundation/mixins/font-size";
+
+// Must include next two for semantic grid to work
+
+// @import "foundation/mixins/respond-to";
+// @import "foundation/mixins/semantic-grid";
+
+// Must include the grid for any responsiveness
+
+// @import "foundation/components/grid";
+
+// Control which common styles get compiled
+
+// @import "foundation/common/typography";
+// @import "foundation/common/forms";
+
+// Control which components you get if customizing
+
+// @import "foundation/components/modules/buttons";
+// @import "foundation/components/modules/tabs";
+// @import "foundation/components/modules/ui";
+// @import "foundation/components/modules/navbar";
+// @import "foundation/components/modules/orbit";
+@import "foundation/components/modules/reveal";
+// @import "foundation/components/modules/offcanvas";
+

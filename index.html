@@ -1,277 +1,158 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>jolos.github.com</title>
-    <meta name="description" content="">
-    <meta name="author" content="">
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8" />
 
-    <link href='css/bootstrap.css' rel='stylesheet'>
-    <link href='css/bootstrap-responsive.css' rel='stylesheet'>
-    <script src='js/underscore-min.js'></script>
-    <script data-main="js/blog" src="js/require-jquery.js"></script>   
+	<!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width" />
 
-    <style>
-      body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-      }
-      
-      #items .fold {
-          cursor : pointer;
-      }
+	<title> シ </title>
 
-      #items .fold:hover {
-	  color : black;
-      }
-      
-      a.readmore {
-          float : right;
-      }
-      
-      div.well {
-          background-color : rgb(217, 237, 247);
-          padding-left : 60px;
-          }
-       hr.soften {
-          background-image: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
-          background-image:    -moz-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
-          background-image:     -ms-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
-          background-image:      -o-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,.1), rgba(0,0,0,0));
-          border: 0 none;
-          height: 1px;
-          margin: 5px 0;
-       }
-     
-     .marketing h1 {
-        font-size: 40px;
-        font-weight: 300;
-        margin: 36px 0 27px;
-        text-align: center;
-    }
+	<!-- Included CSS Files -->
+	<link rel="stylesheet" href="stylesheets/app.css">
+	<link rel="stylesheet" href="stylesheets/general_foundicons.css">
 
-    div.marketing {
-	    float : left:
-    }
-    .marketing div.body {
-        color: #999999;
-        font-size: 18px;
-        font-weight: 300;
-        line-height: 24px;
-        margin: auto;
-        text-align: justify;  
-        width : 800px;  
-    }
-    
-    .footer {
-        border-top: 1px solid #E5E5E5;
-        margin-top: 45px;
-        padding: 35px 0 36px;
-    }
-    
-    i.icon-chevron-up {
-        margin : auto;
-        cursor : pointer;
-        text-align : center;
-        display : block;
-        
-    }
-    
-    .foldable {
-        display : none;
-    }
+	<script src="javascripts/foundation/modernizr.foundation.js"></script>
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-31149655-1']);
 
-    div.tags {
-	    position : absolute;
-	    top : -30px;
-	    right : 0px;
-    }
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
 
-    div.tags span {
-	    cursor : pointer;
-    }
+	<!-- IE Fix for HTML5 Tags -->
+	<!--[if lt IE 9]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
 
-    #loading {
-    	    width: 104px;
-	    margin-left: auto;
-	    margin-right: auto;
-	    animation: rotate 1s linear 0s infinite;
-	    -moz-animation: rotate 1s linear 0s infinite;
-	    -webkit-animation: rotate 1s linear 0s infinite;
-    }
+</head>
+<body>
 
-    #loading div {
-        background-color: #F5F5F5;
-	width: 50px;
-	height: 50px;
-	border-radius: 25px 25px 25px 25px;
-	display: inline-block;
-    }
+	<header>
+		<div class="external-links">
+			<ul class="link-list">
+					<li><a href="http://twitter.com/jolos"></i> Twitter</a></li>
+					<li><a href="http://github.com/jolos"></i> Github</a></li>
+					<li><a href="http://jolos.github.com/wiki"></i> Wiki</a></li>
+				</ul>
 
-    @keyframes rotate 
-    {
-    	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
-    }
+		</div>
+		<div class="row">
+			<div class="twelve columns">
+				<h1>/dev/shm << /dev/random *</h1>
+				<h5>* or also : sharing random thoughts</h5>
+			</div>
+		</div>
+	</header>
+	<div class="row">
+			<div class="twelve columns">
+				<ul class="link-list">
+					<li><a href="#"><i class="foundicon-page"></i> Home</a></li>
+					<li><a href="#blogs"><i class="foundicon-mic"></i> Blogs</a></li>
+					<li><a href="#albums"><i class="foundicon-photo"></i> Albums</a></li>
+				</ul>
+			</div>
+	</div>
 
+	<div class="row" id="main" >
+	</div>
+	<footer>
+	<div class="canvascontainer" style="position : fixed; bottom: -30px; z-index : -1;">
+		<canvas id="sinus" height="130" width="1050"></canvas>  
+		<script type="text/javascript">  
+			function draw(){  
+				var canvas = document.getElementById('sinus');  
+				if (canvas.getContext){  
+					var ctx = canvas.getContext('2d');  
+					canvas.width=window.innerWidth;
+					drawSinus(ctx,"rgba(255, 102, 51, 0.5)",0,60); 
+					drawSinus(ctx,"rgba(255, 102, 51, 0.5)",0,60); 
+					drawSinus(ctx,"rgba(255, 102, 51, 0.5)",0,60); 
+					drawSinus(ctx,"rgba(245, 245, 245, 0.2)",0,60); 
+					drawSinus(ctx,"rgba(245, 245, 245, 0.2)",0,60); 
+				}  
+			}  
 
+			function drawSinus(ctx,colorstr,posx,posy){
+				var y = posy;
+				var x = posx;
+				ctx.fillStyle = colorstr;
+				ctx.beginPath();  	
+				ctx.moveTo(x,y+30);
+				var w = window.innerWidth;
+				while( x < w){
+					xn =x + 100;
+					yn =posy + 15*(Math.random()-0.1)+30*Math.sin(xn/(w*2/3)*Math.PI);
+					y= yn; 
+					x = xn;
+					ctx.lineTo(x,y);
+				}
 
-    @-moz-keyframes rotate /* firefox */
-    {
-    	from {
-		-moz-transform: rotate(0deg);
-	}
-	to {
-		-moz-transform: rotate(360deg);
-	}
-    }
+				y= y - 40;
+				ctx.lineTo(x,y);
 
-
-    @-webkit-keyframes rotate /* Webkit */
-    {
-    	from {
-		-webkit-transform: rotate(0deg);
-	}
-	to {
-		-webkit-transform: rotate(360deg);
-	}
-    }
- 
-   </style>
-
-    <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="images/favicon.ico">
-    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
-    
-   <script type="text/javascript">
-	  var _gaq = _gaq || [];
-  	_gaq.push(['_setAccount', 'UA-31149655-1']);
-  	_gaq.push(['_trackPageview']);
-	
-	  (function() {
-	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	  })();
-
-  </script>
-
-  </head>
-
-  <body>
-    <div class="canvascontainer" style="overflow: hidden;position: absolute; top:0; left:0; width : 100%; z-index: -1;">
-	    <canvas id="sinus" height="130" ></canvas>  
-	     <script type="text/javascript">  
-		  function draw(){  
-		    var canvas = document.getElementById('sinus');  
-		    if (canvas.getContext){  
-		      var ctx = canvas.getContext('2d');  
-		      canvas.width=window.innerWidth;
-		      drawSinus(ctx,"rgba(0, 136, 204, 0.1)",0,60); 
-		      drawSinus(ctx,"rgba(0, 136, 204, 0.1)",0,60); 
-		      drawSinus(ctx,"rgba(0, 136, 204, 0.1)",0,60); 
-		      drawSinus(ctx,"rgba(245, 245, 245, 0.5)",0,60); 
-		      drawSinus(ctx,"rgba(245, 245, 245, 0.5)",0,60); 
-		    }  
-		  }  
-
-		  function drawSinus(ctx,colorstr,posx,posy){
-		      var y = posy;
-		      var x = posx;
-		      ctx.fillStyle = colorstr;
-		      ctx.beginPath();  	
-		      ctx.moveTo(x,y+30);
-		      var w = window.innerWidth;
-		      while( x < w){
-			      xn =x + 100;
-			      yn =posy + 20*(Math.random()-0.1)+60*Math.sin(xn/(w*2/3)*Math.PI);
-			      y= yn; 
-			      x = xn;
-			      ctx.lineTo(x,y);
-		      }
-
-		      y= y - 40;
-		      ctx.lineTo(x,y);
-
-		      while( x > 0) {
-			      xn =x-100;
-			      yn =posy - 20*(Math.random()-0.1)+60*Math.sin(xn/(w*2/3)*Math.PI);
-			      y = yn;
-			      x = xn;
-			      ctx.lineTo(x,y);
-		      }
-		      ctx.fill();
-		  }
-		  draw();
+				while( x > 0) {
+					xn =x-100;
+					yn =posy - 15*(Math.random()-0.1)+30*Math.sin(xn/(w*2/3)*Math.PI);
+					y = yn;
+					x = xn;
+					ctx.lineTo(x,y);
+				}
+				ctx.fill();
+			}
+			draw();
 		</script>
-    </div>
-    <div class='container'>
-    <ul class="nav nav-pills">        
-	<li><a href="#" onclick="draw()" style="font-weight: bold;background-color: transparent; font-size: 150%" title="Home">#</a></li>
-        <li><a href="#about/me" onclick="draw()" >About/me</a></li>
-    <li><a href="http://www.twitter.com/jolos">Twitter</a></li>
-    <li><a href="https://picasaweb.google.com/103884336232903331378">Picasa</a></li>
-    <li><a href="https://github.com/jolos">Github</a></li>
-    <li><a href="https://jolos.github.com/wiki">Wiki</a></li>
-    </ul>
+	</div>
+	</footer>
 
-    <div id="errors"></div>
- 	<div id="loading" >
-		<div class="first"></div>
-		<div class="second"></div>
-		</br>
-		<div class="third"></div>
-		<div class="fourth"></div>
-	</div>  
-    
-    <div id="header">
-        <!--[if lt IE 9]>
-                <div class='hero-unit'>
-                  <h2>This website won't work on your browser</h2>
-                  <p>Seems you're using an old version of Internet Explorer. If you want to visit this website, You should either
-                  	update to a newer version or install chrome or even better, <a href="http://getfirefox.com">firefox</a>.
-                  </p>
-                </div>
+	<!-- Included JS Files (Uncompressed) -->
+
+	<script src="javascripts/mustache.js"></script>
+
+
+	<script src="javascripts/foundation/jquery.js"></script>
+
+	<script src="javascripts/underscore.js"></script>
+
+	<script src="javascripts/backbone.js"></script>
+
+	<script src="javascripts/main.js"></script>
+
+	<script src="javascripts/marked.js"></script>
+
+<!--	
+	<script src="javascripts/foundation/jquery.foundation.reveal.js"></script>
 	
-        <![endif]-->
-
-        
-    </div>
-
-       
-    <div id="items">
-    </div>
-
-     <!-- /container -->
-
-
-     </div>
-     <div class="container">
-     <footer class="footer">
-     <p>Made with love, with the help of some friends: <a href="http://documentcloud.github.com/backbone/">backbone.js</a>, <a href="http://twitter.github.com/bootstrap"> twitter bootstrap</a> and <a href="http://icanhazjs.com">ICanHaz.js</a>. <br/> Hosted on <a href="http://github.com/blog/272-github-pages">Github Pages</a> </p>
-     </footer>
-     </div>
-
-         <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script>
-	    var header_data = {
-				title:	"You've reached my website!",
-				body: "This is my personal website and me that's Joris Geessels. If you're here to know more about me, you might want to read <a href='#about/me'>#about/me</a>. If you're not really interested in my person but rather in my thoughts you can have a look at my blogposts. These are listed below. Just click on the title and if everything goes well, you should see a blogpost magically unfold. To read more on the internals of this website check <a href='#about/this_website'>#about/this_website</a>",
-	    };
-    </script>
-  </body>
+	<script src="javascripts/foundation/jquery.foundation.tooltips.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.alerts.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.forms.js"></script>
+	
+	<script src="javascripts/foundation/jquery.placeholder.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.tabs.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.accordion.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.mediaQueryToggle.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.orbit.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.buttons.js"></script>
+	
+	<script src="javascripts/foundation/jquery.foundation.navigation.js"></script>
+	
+	
+  <script src="javascripts/foundation/app.js"></script> -->
+</body>
 </html>
-

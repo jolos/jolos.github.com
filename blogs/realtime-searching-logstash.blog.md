@@ -1,0 +1,19 @@
+Lately the web is seeing a lot of fundamental changes, the explosion of this mobile thing, the possibility to create advanced web applications with modern js libraries and css3,realtime web thanks to websockets and there's probably more. I had already experimented with one of the modern mvc js libraries ( backbone ) of which you see the result at this very moment. I was already planning for a while to take a look at websockets as it really redefines the concept of a webpage.So I decided to implement a realtime search frontend. Why? Well when I was looking at <a href='http://graylog2.org/'>Graylog</a> and <a href='http://logstash.net'> logstash</a> I noticed that neither of them supports realtime search.And when you watch your logs, you do want it to see it in realtime.
+or this small project I set the following goals:
+
+- written in <a href='http://www.scala-lang.org'>scala</a> as it's one the (many) languages I wanted to learn
+- use <a href='http://www.akka.io'>akka</a>: a framework for message passing
+- make it scalable
+- use <a href='http://zeromq.org'>zmq</a> 'the intelligent transport layer'
+- make sure it's event driven"
+
+I barely scratched the surface of all these new technologies but still I think I can make already a first judgement:
+
+- Graylog's ui is much neater, but I prefer the pipe architecture of logstash
+- Scala is at first overwhelming ( and it still is ), but it's certainly a powerful programming language and I'm very much interested to learn more about it
+- Akka: I was impressed on how easy it was to integrate with zeromq. If you have to implement a scalable and distributed application you should certainly consider Akka
+- Zeromq: don't waste your time, learn it now! :-)
+- So most of the good things I heard about these technologies are at this point certainly justified. To conclude a screenshot of my hello world, the code can be found at my github repo
+<a rel='lightbox' href='files/realtimesearch.png' style='text-align: center'><img width='600' src='files/realtimesearch.png'/></a>
+
+
