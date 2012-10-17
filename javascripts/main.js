@@ -19,7 +19,6 @@ $(function() {
           window.document.title = " シ "+ route;
         });
         this.bind('route:default', function(route){
-            console.log(route);
             _gaq.push(['_trackPageview', "/#"+ route])
         });
         Backbone.history.start();
@@ -252,6 +251,8 @@ $(function() {
             return item instanceof Gist;
           case 'album': 
             return item instanceof Album;
+          case 'page': 
+            return item instanceof Page;
         }
       };
 
@@ -263,6 +264,8 @@ $(function() {
             return "item is gist";
           case 'album': 
             return "item is album";
+          case 'page': 
+            return "item is page";
         }
       }
     }
@@ -289,8 +292,6 @@ $(function() {
         }
       },
     });
-
-
 
     window.Item = Backbone.Model.extend({
       sync: function(method,model,options){
@@ -320,6 +321,22 @@ $(function() {
           error : function(data){
             Error('Oops','Something went wrong, not everything will work as it should');
           },
+        });
+      },
+    });
+
+    window.Page = Item.extend({
+      defaults : {
+        content : "",
+      },
+
+      sync: function(method,model,options){
+        var url = 'http://jolos.github.com/' + model.get('path');
+        jQuery.ajax({
+          url : url,
+          dataType : 'html',
+          success : options.success,
+          error : options.success,
         });
       },
     });
@@ -440,6 +457,48 @@ $(function() {
        };
     };
 
+    window.PageFetcher = function(user,repo,folder) {
+       var url = 'https://api.github.com/repos/'+user+'/'+repo+'/contents/'+folder;
+       this.fetched = false;
+       this.fetch = function(type_filter, callback, context) {
+           if( type_filter.filter(new Page) && !this.fetched ){
+             var fetcher = this;
+             var success = function(data) {
+               fetcher.fetched = true;
+               var that = this;
+             _.each(data.data, function(page) {
+               if (page.type=='file'){
+                 var page = new Page({
+                   name : page.name,
+                   path : page.path,
+                   url : page._links.self,
+                 });
+
+                 page.fetch({ 
+                   success: function(content){
+                     page.set('content',content);
+                     callback.call(context,page); 
+                   },
+                   error: function(content){
+                     console.log('error');
+                   }
+                 });
+               }
+             });
+           };
+
+         jQuery.ajax({
+            url : url,
+            dataType : 'jsonp',
+            context : context,
+            success : success,
+            error : function(data){
+              Error('Oops','Something went wrong, not everything will work as it should');
+            },
+          });
+           }
+       }
+    };
  
     window.PicasaFetcher = function(uid) {
        var baseurl = 'https://picasaweb.google.com/data/feed/api/user/' + uid + '?alt=json';
@@ -500,7 +559,9 @@ $(function() {
       fetch : function(type_filter) {
         var that = this;
         _.each(this.fetchers,function(fetcher, i) {
-          fetcher.fetch(type_filter,function(item){ this.add(item);}, that);
+          fetcher.fetch(type_filter,function(item){ 
+            this.add(item);
+          }, that);
         });
       },
 
@@ -745,6 +806,25 @@ $(function() {
       },
     });
 
+    window.PageView = Backbone.View.extend({
+      template : '<div class="row">{{{content}}}</div>',
+
+      render : function(){
+        data =this.preprocess(this.model)
+        // use Mustache to render
+        html = Mustache.render(this.template, data);
+        // replace the html of the element
+        $(this.el).html(html);
+        // return an instance of the view
+        return this;
+      },
+
+      preprocess : function(model) {
+        return {
+          content : model.get('content'),
+        };
+      },
+    });
 
     window.ItemListView = Backbone.View.extend({
       el : $('#main'),
@@ -755,10 +835,12 @@ $(function() {
         this.items.fetchers.push(new GistFetcher('jolos'));
         this.items.fetchers.push(new PicasaFetcher("103884336232903331378"));
         this.items.fetchers.push(new BlogFetcher('./json/blogs.json'));
+        this.items.fetchers.push(new PageFetcher('jolos', 'jolos.github.com','pages/'));
         this.factory = new ViewFactory();
         this.factory.register(Gist,ArticleView);
         this.factory.register(Album,AlbumView);
         this.factory.register(BlogItem,BlogView);
+        this.factory.register(Page,PageView);
       },
 
       addItem : function(item) {
