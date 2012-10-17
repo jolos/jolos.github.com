@@ -336,7 +336,7 @@ $(function() {
           url : url,
           dataType : 'html',
           success : options.success,
-          error : options.success,
+          error : options.error,
         });
       },
     });
@@ -489,7 +489,7 @@ $(function() {
 
          jQuery.ajax({
             url : url,
-            dataType : 'jsonp',
+            dataType : 'json',
             context : context,
             success : success,
             error : function(data){
