@@ -489,7 +489,7 @@ $(function() {
 
          jQuery.ajax({
             url : url,
-            dataType : 'jsonp',
+            dataType : 'json',
             context : context,
             success : success,
             error : function(data){
