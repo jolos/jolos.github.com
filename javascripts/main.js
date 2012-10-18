@@ -336,6 +336,7 @@ $(function() {
           url : url,
           dataType : 'html',
           success : options.success,
+          context : options.context,
           error : options.error,
         });
       },
@@ -473,12 +474,13 @@ $(function() {
                    path : page.path,
                    url : page._links.self,
                  });
-
+                 
                  page.fetch({ 
                    success: function(content){
                      page.set('content',content);
-                     callback.call(context,page); 
+                     callback.call(this,page); 
                    },
+                   context : context,
                    error: function(content){
                      console.log('error');
                    }
@@ -489,8 +491,12 @@ $(function() {
 
          jQuery.ajax({
             url : url,
-            dataType : 'json',
+            dataType : 'jsonp',
+            data : {ref: 'master'},
             context : context,
+            headers : {
+              'Accept': 'application/vnd.github.beta+json'
+            },
             success : success,
             error : function(data){
               Error('Oops','Something went wrong, not everything will work as it should');
@@ -832,10 +838,10 @@ $(function() {
       initialize : function() {
         this.items = new ItemList();
         this.items.filteredItems.bind('add', this.addItem, this);
-        this.items.fetchers.push(new GistFetcher('jolos'));
+        //this.items.fetchers.push(new GistFetcher('jolos'));
         this.items.fetchers.push(new PicasaFetcher("103884336232903331378"));
         this.items.fetchers.push(new BlogFetcher('./json/blogs.json'));
-        this.items.fetchers.push(new PageFetcher('jolos', 'jolos.github.com','pages/'));
+        this.items.fetchers.push(new PageFetcher('jolos', 'jolos.github.com','pages'));
         this.factory = new ViewFactory();
         this.factory.register(Gist,ArticleView);
         this.factory.register(Album,AlbumView);
