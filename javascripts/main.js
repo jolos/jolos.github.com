@@ -334,7 +334,7 @@ $(function() {
         var url = 'http://jolos.github.com/' + model.get('path');
         jQuery.ajax({
           url : url,
-          dataType : 'html',
+          dataType : 'text',
           success : options.success,
           context : options.context,
           error : options.error,
