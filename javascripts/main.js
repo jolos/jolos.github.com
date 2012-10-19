@@ -334,9 +334,9 @@ $(function() {
         var url = 'http://jolos.github.com/' + model.get('path');
         jQuery.ajax({
           url : url,
-          dataType : 'text',
+          dataType : 'html',
           success : options.success,
-          context : options.context,
+          context : this,
           error : options.error,
         });
       },
