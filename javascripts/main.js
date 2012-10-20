@@ -6,11 +6,12 @@ $(function() {
       },
     
       aliases : {
-        '' : 'title/!elastic&!profiel&!plakboek&!test&!notes',
-        'test' : 'type/gist',
+        '' : 'type/!page&!gist/title/!elastic&!profiel&!plakboek&!test&!notes',
         'all' : '/',
         'albums' : 'type/album/title/!plakboek&!profiel',
+        'instapaper' : 'type/instapaper',
         'blogs' : 'type/blog',
+        'about/me' : 'type/page/path/about.me',
       },
 
       initialize : function(){
@@ -253,6 +254,8 @@ $(function() {
             return item instanceof Album;
           case 'page': 
             return item instanceof Page;
+          case 'instapaper': 
+            return item instanceof InstaPaper;
         }
       };
 
@@ -266,6 +269,8 @@ $(function() {
             return "item is album";
           case 'page': 
             return "item is page";
+          case 'instapaper': 
+            return "item is instapaper";
         }
       }
     }
@@ -325,18 +330,27 @@ $(function() {
       },
     });
 
+    window.InstaPaper = Item.extend({
+    });
+
     window.Page = Item.extend({
       defaults : {
         content : "",
       },
 
       sync: function(method,model,options){
-        var url = 'http://jolos.github.com/' + model.get('path');
+        var url = model.get('path');
+        var that =this;
         jQuery.ajax({
           url : url,
           dataType : 'html',
-          success : options.success,
-          error : options.error,
+          success : function(data){
+            that.set('content', data);
+            options.success.call(options.context);
+          },
+          error : function(data){
+            console.log(data);
+          },
         });
       },
     });
@@ -457,6 +471,46 @@ $(function() {
        };
     };
 
+    window.InstaPaperFetcher = function(feedurl) {
+       var yqlurl = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent('select * from xml where url="' + feedurl + '"') + '&format=json';
+       this.fetched = false;
+       this.fetch = function(type_filter, callback, context) {
+         if( type_filter.filter(new InstaPaper) && !this.fetched ){
+           var fetcher = this;
+           var success = function(data) {
+             fetcher.fetched = true;
+             var that = this;
+             _.each(data.query.results.rss.channel.item, function(item) {
+               var created_date = new Date(item.pubDate);
+               callback.call(that,new InstaPaper({
+                 title : item.title,
+                 description : item.description,
+                 created : {
+                   year : created_date.getFullYear(),
+                   month : created_date.getMonth()+1,
+                   day : created_date.getDay() + 1,
+                 }, 
+                 url : item.link,
+               }));
+             });
+           };
+
+         jQuery.ajax({
+          url : yqlurl,
+          dataType : 'jsonp',
+          context : context,
+          success : function(json){ 
+            success.call(this,json);
+          },
+          error : function(data){
+            Error('Oops','Something went wrong, not everything will work as it should');
+          },
+        });
+       }
+     };
+    };
+
+ 
     window.PageFetcher = function(user,repo,folder) {
        var url = 'https://api.github.com/repos/'+user+'/'+repo+'/contents/'+folder;
        this.fetched = false;
@@ -475,9 +529,8 @@ $(function() {
                  });
                  
                  page.fetch({ 
-                   success: function(content){
-                     page.set('content',content);
-                     callback.call(this,page); 
+                   success: function(model){
+                     callback.call(context,model); 
                    },
                    context : context,
                    error: function(content){
@@ -811,8 +864,64 @@ $(function() {
       },
     });
 
+    window.InstaPaperView = Backbone.View.extend({
+      template :  '<div class="row instapaper"><div class="three columns"></div><div class="nine columns"><h4><a href="{{url}}"><i class="foundicon-star"></i> {{url_shortened}}</a></h4><p>{{title}} </p><p>{{{summary}}}</p></div></div>',
+
+      events : {
+        "click h4" : "track",
+      },
+
+      track : function(){
+       _gaq.push(['_trackEvent', 'item', 'open', this.model.get('title')]);
+      },
+
+      initialize : function(){
+        this.model.bind('destroy', this.remove, this);
+      },
+
+      remove : function(){
+        this.$el.remove();
+      },
+
+      render : function(){
+        data =this.preprocess(this.model)
+        // use Mustache to render
+        html = Mustache.render(this.template, data);
+        // replace the html of the element
+        $(this.el).html(html);
+        // return an instance of the view
+        return this;
+      },
+
+      preprocess : function(model) {
+
+        var created = model.get('created');
+        var created_str = created.day + " / " + created.month + " / " + created.year;
+        var url_shortened = model.get('url');
+        if (url_shortened.length > 40){
+          url_shortened = url_shortened.substring(0,40) + " ... ";
+        }
+        return {
+          title : model.get('title'),
+          summary :  model.get('description'),
+          url : model.get('url'),
+          url_shortened : url_shortened,
+          created : created_str,
+        };
+      },
+    });
+
+
     window.PageView = Backbone.View.extend({
       template : '<div class="row">{{{content}}}</div>',
+
+      initialize : function(){
+        this.model.bind('destroy', this.remove, this);
+      },
+
+      remove : function(){
+        this.$el.remove();
+      },
 
       render : function(){
         data =this.preprocess(this.model)
@@ -841,11 +950,13 @@ $(function() {
         this.items.fetchers.push(new PicasaFetcher("103884336232903331378"));
         this.items.fetchers.push(new BlogFetcher('./json/blogs.json'));
         this.items.fetchers.push(new PageFetcher('jolos', 'jolos.github.com','pages'));
+        this.items.fetchers.push(new InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
         this.factory = new ViewFactory();
         this.factory.register(Gist,ArticleView);
         this.factory.register(Album,AlbumView);
         this.factory.register(BlogItem,BlogView);
         this.factory.register(Page,PageView);
+        this.factory.register(InstaPaper,InstaPaperView);
       },
 
       addItem : function(item) {

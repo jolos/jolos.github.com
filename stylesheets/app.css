@@ -2654,7 +2654,7 @@ div.orbit-wrapper span.rotator {
   position: absolute;
   top: 0;
   left: -20px;
-  background: url('/images/foundation/orbit/rotator-black.png?1350112565') no-repeat;
+  background: url('/images/foundation/orbit/rotator-black.png?1350492258') no-repeat;
   z-index: 3;
 }
 
@@ -2679,7 +2679,7 @@ div.orbit-wrapper span.rotator.move {
 div.orbit-wrapper span.mask.move {
   width: 40px;
   left: 0;
-  background: url('/images/foundation/orbit/timer-black.png?1350112565') repeat 0 0;
+  background: url('/images/foundation/orbit/timer-black.png?1350492258') repeat 0 0;
 }
 
 /* line 82, ../../../../.gem/ruby/1.9.1/gems/zurb-foundation-3.0.9/scss/foundation/components/modules/_orbit.scss */
@@ -2690,14 +2690,14 @@ div.orbit-wrapper span.pause {
   position: absolute;
   top: 0;
   left: 0;
-  background: url('/images/foundation/orbit/pause-black.png?1350112565') no-repeat;
+  background: url('/images/foundation/orbit/pause-black.png?1350492258') no-repeat;
   z-index: 4;
   opacity: 0;
 }
 
 /* line 93, ../../../../.gem/ruby/1.9.1/gems/zurb-foundation-3.0.9/scss/foundation/components/modules/_orbit.scss */
 div.orbit-wrapper span.pause.active {
-  background: url('/images/foundation/orbit/pause-black.png?1350112565') no-repeat 0 -40px;
+  background: url('/images/foundation/orbit/pause-black.png?1350492258') no-repeat 0 -40px;
 }
 
 /* line 97, ../../../../.gem/ruby/1.9.1/gems/zurb-foundation-3.0.9/scss/foundation/components/modules/_orbit.scss */
@@ -2749,25 +2749,25 @@ div.orbit-wrapper div.slider-nav span {
 
 /* line 134, ../../../../.gem/ruby/1.9.1/gems/zurb-foundation-3.0.9/scss/foundation/components/modules/_orbit.scss */
 div.orbit-wrapper div.slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow.png?1350112565');
+  background: url('/images/foundation/orbit/right-arrow.png?1350492258');
   background-size: 100%;
   right: 0;
 }
 
 /* line 139, ../../../../.gem/ruby/1.9.1/gems/zurb-foundation-3.0.9/scss/foundation/components/modules/_orbit.scss */
 div.orbit-wrapper div.slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow.png?1350112565');
+  background: url('/images/foundation/orbit/left-arrow.png?1350492258');
   background-size: 100%;
   left: 0;
 }
 
 /* line 145, ../../../../.gem/ruby/1.9.1/gems/zurb-foundation-3.0.9/scss/foundation/components/modules/_orbit.scss */
 .lt-ie9 div.orbit-wrapper div.slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow-small.png?1350112565');
+  background: url('/images/foundation/orbit/right-arrow-small.png?1350492258');
 }
 /* line 146, ../../../../.gem/ruby/1.9.1/gems/zurb-foundation-3.0.9/scss/foundation/components/modules/_orbit.scss */
 .lt-ie9 div.orbit-wrapper div.slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow-small.png?1350112565');
+  background: url('/images/foundation/orbit/left-arrow-small.png?1350492258');
 }
 
 /* Bullet Nav ---------------------- */
@@ -2789,7 +2789,7 @@ ul.orbit-bullets li {
   cursor: pointer;
   color: #999;
   text-indent: -9999px;
-  background: url('/images/foundation/orbit/bullets.jpg?1350112565') no-repeat 4px 0;
+  background: url('/images/foundation/orbit/bullets.jpg?1350492258') no-repeat 4px 0;
   width: 13px;
   height: 12px;
   overflow: hidden;
@@ -2846,7 +2846,7 @@ ul.orbit-bullets li {
   cursor: pointer;
   color: #999;
   text-indent: -9999px;
-  background: url('/images/foundation/orbit/bullets.jpg?1350112565') no-repeat 4px 0;
+  background: url('/images/foundation/orbit/bullets.jpg?1350492258') no-repeat 4px 0;
   width: 13px;
   height: 12px;
   overflow: hidden;
@@ -4251,15 +4251,21 @@ div.open .placeholder {
   width: 0;
 }
 
-/* line 68, ../sass/app.scss */
+/* line 69, ../sass/app.scss */
+.instapaper h4 a:hover, .instapaper h4 a {
+  font-weight: 400;
+  color: #FF6633;
+}
+
+/* line 75, ../sass/app.scss */
 ul.meta {
   width: 25%;
 }
-/* line 72, ../sass/app.scss */
+/* line 79, ../sass/app.scss */
 ul.meta p {
   color: #4F4F4F;
 }
-/* line 76, ../sass/app.scss */
+/* line 83, ../sass/app.scss */
 ul.meta li {
   border-top: 1px dotted #CCCCCC;
   list-style: none outside none;
@@ -4267,17 +4273,17 @@ ul.meta li {
   float: left;
 }
 
-/* line 84, ../sass/app.scss */
+/* line 91, ../sass/app.scss */
 .title {
   height: 4em;
 }
 
-/* line 90, ../sass/app.scss */
+/* line 97, ../sass/app.scss */
 div.closed .meta {
   display: none;
 }
 
-/* line 96, ../sass/app.scss */
+/* line 103, ../sass/app.scss */
 div.start .meta {
   display: none;
 }
