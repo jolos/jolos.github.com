@@ -336,7 +336,6 @@ $(function() {
           url : url,
           dataType : 'html',
           success : options.success,
-          context : this,
           error : options.error,
         });
       },
