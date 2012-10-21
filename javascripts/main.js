@@ -67,7 +67,6 @@ $(function() {
         } else {
           this.appview.items.fetch(new TrueFilter());
         }
-
       },
     });
 
@@ -138,32 +137,33 @@ $(function() {
         return new PropertyRegexFilter(name,query);
       };
     };
+
     window.FilterFactory = function(defaultFilter) {
       this.default = defaultFilter;
     };
 
     _.extend(FilterFactory.prototype,{
-      filters : [],
+        filters : [],
 
-      getFilterInstance : function(name, arg){
-        var tuple = _.find(this.filters, function(tuple){
-          return name == tuple.name;
-        });
+        getFilterInstance : function(name, arg){
+          var tuple = _.find(this.filters, function(tuple){
+            return name == tuple.name;
+          });
 
-        if (tuple) {
-          var filter = new tuple.filter(arg);
-        } else {
-          // return default filter
-          var filter = new defaultFilter(arg);
-        }
+          if (tuple) {
+            var filter = new tuple.filter(arg);
+          } else {
+            // return default filter
+            var filter = new defaultFilter(arg);
+          }
 
-        return filter;
-      },
+          return filter;
+        },
 
-      register : function(name, filterobj) {
-        var tuple ={'name': name, 'filter': filterobj};
-        this.filter.push(tuple);
-      },
+        register : function(name, filterobj) {
+          var tuple ={'name': name, 'filter': filterobj};
+          this.filter.push(tuple);
+        },
     });
 
     window.OrFilter = function(filters) {
@@ -197,7 +197,7 @@ $(function() {
       this.tostr = function(){
         return "TRUE";
       };
-    },
+    };
 
     window.NotFilter = function(filter) {
       this.filter = function(item) {
@@ -379,7 +379,6 @@ $(function() {
             Error('Oops','Something went wrong, not everything will work as it should');
           },
         });
-
       },
     });
 
@@ -416,16 +415,16 @@ $(function() {
            };
 
            jQuery.ajax({
-            url : baseurl,
-            dataType : 'jsonp',
-            context : context,
-            success : success,
-            error : function(data){
-              Error('Oops','Something went wrong, not everything will work as it should');
-            },
-          });
-        }
-       };
+              url : baseurl,
+              dataType : 'jsonp',
+              context : context,
+              success : success,
+              error : function(data){
+                Error('Oops','Something went wrong, not everything will work as it should');
+              },
+           });
+       }
+     };
     };
 
     window.BlogFetcher = function(jsonurl) {
@@ -457,18 +456,18 @@ $(function() {
            };
 
          jQuery.ajax({
-          url : baseurl,
-          dataType : 'json',
-          context : context,
-          success : function(json){ 
-            success.call(this,json);
-          },
-          error : function(data){
-            Error('Oops','Something went wrong, not everything will work as it should');
-          },
-        });
-       }
-       };
+            url : baseurl,
+            dataType : 'json',
+            context : context,
+            success : function(json){ 
+              success.call(this,json);
+            },
+            error : function(data){
+              Error('Oops','Something went wrong, not everything will work as it should');
+            },
+         });
+        }
+      };
     };
 
     window.InstaPaperFetcher = function(feedurl) {
@@ -554,8 +553,8 @@ $(function() {
               Error('Oops','Something went wrong, not everything will work as it should');
             },
           });
-           }
-       }
+        }
+      }
     };
  
     window.PicasaFetcher = function(uid) {
@@ -600,8 +599,8 @@ $(function() {
               Error('Oops','Something went wrong, not everything will work as it should');
             },
           });
-       }
-       };
+        }
+      };
     };
  
     window.ItemList = Backbone.Collection.extend({
@@ -781,10 +780,8 @@ $(function() {
               successcallback.call(that);
             });
           });
-          });
-
+         });
         });
-
 
         this.setTransition('*', 'end', function(successcallback) {
           var that = this;
@@ -971,9 +968,7 @@ $(function() {
           $(children[idx]).before(html);
         }
         $(view.el).slideDown(500);
-        
       },
-
     });
 
     window.router = new Router;
