@@ -17,6 +17,8 @@ Once the filter is parsed several fetchers are fired to fetch all items from sev
 
 To conclude some words on the animations. This was something I struggled with while building my previous application. It's not easy to get the state flow 100% right. That's why this time I built an abstract StateView. You can use this stateview to control the states of your view. You just have to define states and the animation callbacks that correspond to the transitions between the states. 
 
+If you're still interested in finding out more, take a look at the [code](http://prose.io/#jolos/jolos.github.com/edit/master/javascripts/main.js)
+
 
 
 
