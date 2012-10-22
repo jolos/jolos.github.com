@@ -6,7 +6,7 @@ $(function() {
       },
     
       aliases : {
-        '' : 'type/!page&!gist/title/!elastic&!profiel&!plakboek&!test&!notes',
+        '' : 'type/!page&!gist&!instapaper/title/!elastic&!profiel&!plakboek&!test&!notes',
         'all' : '/',
         'albums' : 'type/album/title/!plakboek&!profiel',
         'instapaper' : 'type/instapaper',
