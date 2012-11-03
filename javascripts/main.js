@@ -1,5 +1,6 @@
 $(function() {
-    window.log_error = function(type, msg) {
+    window.error_log = function(type, msg) {
+          console.log(msg); 
           _gaq.push(['_trackEvent', 'error', type, msg]);
     }
     window.Router = Backbone.Router.extend({
@@ -40,35 +41,39 @@ $(function() {
         }
         // This function connects all the parts
 
-        var filters = [];
+        try {
+          var filters = [];
 
-        var typefilters = []
+          var typefilters = []
 
-        while (path.length !=0) {
-          var name = path.shift();
-          var parser = new FilterParser(name);
-          var query =path.shift();
-          var filter = parser.parse(query);
-          if (name == 'type'){
-           typefilters.push(filter); 
-          } 
-          filters.push(filter); 
-        }
-        
-        if( filters.length > 1 ) {
-          this.appview.items.filter = new AndFilter(filters);
-        } else if(filters.length == 1) {
-          this.appview.items.filter = filters[0];
-        } else {
-          this.appview.items.filter = new TrueFilter();;
-        }
- 
-        if( typefilters.length > 1 ) {
-          this.appview.items.fetch(new AndFilter(typefilters));
-        } else if(typefilters.length == 1) {
-          this.appview.items.fetch(typefilters[0]);
-        } else {
-          this.appview.items.fetch(new TrueFilter());
+          while (path.length !=0) {
+            var name = path.shift();
+            var parser = new FilterParser(name);
+            var query =path.shift();
+            var filter = parser.parse(query);
+            if (name == 'type'){
+             typefilters.push(filter); 
+            } 
+            filters.push(filter); 
+          }
+          
+          if( filters.length > 1 ) {
+            this.appview.items.filter = new AndFilter(filters);
+          } else if(filters.length == 1) {
+            this.appview.items.filter = filters[0];
+          } else {
+            this.appview.items.filter = new TrueFilter();;
+          }
+   
+          if( typefilters.length > 1 ) {
+            this.appview.items.fetch(new AndFilter(typefilters));
+          } else if(typefilters.length == 1) {
+            this.appview.items.fetch(typefilters[0]);
+          } else {
+            this.appview.items.fetch(new TrueFilter());
+          }
+        } catch(err) {
+          error_log('general', err.message);
         }
       },
     });
@@ -308,6 +313,21 @@ $(function() {
 
     window.Gist = Item.extend({
       sync: function(method,model,options){
+        var url =  'https://api.github.com/gists/' + model.get('id');
+        jQuery.ajax({
+          url : url,
+          dataType : 'jsonp',
+          context : this,
+          success : function(json){
+            this.set('files',json.data.files);
+            options.success.call(options.context);
+          },
+          error : function(data){
+            console.log(data);
+            error_log('sync', 'Error while trying to sync blog with ' + url);
+          },
+        });
+
       },
     });
 
@@ -402,6 +422,7 @@ $(function() {
                  id : gist.id,
                  title : gist.description,
                  author : gist.user.login,
+                 html_url: gist.html_url,
                  updated : {
                    year : updated_date.getFullYear(),
                    month : updated_date.getMonth() +1,
@@ -423,7 +444,7 @@ $(function() {
               context : context,
               success : success,
               error : function(data){
-                error_log('fetch', 'Error while trying to fetch gists);
+                error_log('fetch', 'Error while trying to fetch gists');
               },
            });
        }
@@ -466,7 +487,7 @@ $(function() {
               success.call(this,json);
             },
             error : function(data){
-              error_log('fetch', 'Error while trying to fetch blogs);
+              error_log('fetch', 'Error while trying to fetch blogs');
             },
          });
         }
@@ -505,7 +526,7 @@ $(function() {
             success.call(this,json);
           },
           error : function(data){
-            error_log('fetch', 'Error while trying to fetch instapaper);
+            error_log('fetch', 'Error while trying to fetch instapaper');
           },
         });
        }
@@ -553,7 +574,7 @@ $(function() {
             },
             success : success,
             error : function(data){
-              error_log('fetch', 'Error while trying to fetch pages);
+              error_log('fetch', 'Error while trying to fetch pages');
             },
           });
         }
@@ -599,7 +620,7 @@ $(function() {
             context : context,
             success : success,
             error : function(data){
-              error_log('fetch', 'Error while trying to fetch albums);
+              error_log('fetch', 'Error while trying to fetch albums');
             },
           });
         }
@@ -754,12 +775,12 @@ $(function() {
           this.model.fetch({
             context : that,
             success : function(){
+              successcallback.call(that); 
               that.render();
               that.$('.placeholder').hide();
               that.$('.body').slideDown(500, function(){
                 that.$('.meta').slideDown(500);
               });
-              successcallback.call(that); 
             },
           });
         });
@@ -844,6 +865,48 @@ $(function() {
           meta : meta,
         };
       },
+    });
+
+    window.GistView = ArticleView.extend({
+      template : {
+            default : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4>{{title}}</h4><ul class="meta">{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{{body}}}</div></div></div>',
+      },
+
+      preprocess : function(model) {
+        var meta = [];
+        var created = model.get('created');
+        var updated = model.get('updated');
+        meta.push({name : 'link', value: "<span> <a href='"+model.get('html_url')+"'>View at Github</a></span>"});
+        meta.push({name : 'created', value: "<i class='foundicon-clock'></i><span> " +created.day + " / " + created.month + " / " + created.year + "</span>" });
+        meta.push({name : 'updated', value: "<i class='foundicon-edit'></i> <span> " +updated.day + " / " + updated.month + " / " + updated.year  +"</span>"});
+
+        var body = "";
+        if (this.current_state != 'start') {
+          _.each(model.get('files'), function(file) {
+            switch(file.type) {
+              case 'text/plain' :
+                body +=marked(file.content);
+                break;
+              case 'text/html':
+                body += file.content;
+                break;
+              case 'image/png' :
+                body += "<img src='" + file.raw_url + "/>";
+                break;
+              default:
+                body += "<pre>"+ hljs.highlight(file.language, file.content).value+"</code></pre>";
+                break;
+            }
+          });
+        }
+
+        return {
+          title : model.get('title'),
+          body : body,
+          meta : meta,
+        };
+      },
+
     });
 
     window.BlogView = ArticleView.extend({
@@ -946,13 +1009,13 @@ $(function() {
       initialize : function() {
         this.items = new ItemList();
         this.items.filteredItems.bind('add', this.addItem, this);
-        //this.items.fetchers.push(new GistFetcher('jolos'));
+        this.items.fetchers.push(new GistFetcher('jolos'));
         this.items.fetchers.push(new PicasaFetcher("103884336232903331378"));
         this.items.fetchers.push(new BlogFetcher('./json/blogs.json'));
         this.items.fetchers.push(new PageFetcher('jolos', 'jolos.github.com','pages'));
         this.items.fetchers.push(new InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
         this.factory = new ViewFactory();
-        this.factory.register(Gist,ArticleView);
+        this.factory.register(Gist,GistView);
         this.factory.register(Album,AlbumView);
         this.factory.register(BlogItem,BlogView);
         this.factory.register(Page,PageView);
