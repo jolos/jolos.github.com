@@ -319,8 +319,12 @@ $(function() {
         dataType : 'jsonp',
         context : this,
         success : function(json){
-          this.set('files',json.data.files);
-          options.success.call(options.context);
+          try {
+            this.set('files',json.data.files);
+            options.success.call(options.context);
+          } catch(err) {
+            error_log('sync','failed parsing Gist: '+err.get_message());
+          }
         },
         error : function(data){
           console.log(data);
@@ -343,8 +347,12 @@ $(function() {
         dataType : 'text',
         context : this,
         success : function(data){
-          this.set('content',data);
-          options.success.call(options.context);
+          try{
+            this.set('content',data);
+            options.success.call(options.context);
+          } catch(err) {
+            error_log('sync','failed parsing Blog: '+err.get_message());
+          }
         },
         error : function(data){
           error_log('sync', 'Error while trying to sync blog with ' + url);
@@ -368,8 +376,12 @@ $(function() {
         url : url,
         dataType : 'html',
         success : function(data){
-          that.set('content', data);
-          options.success.call(options.context);
+          try {
+            that.set('content', data);
+            options.success.call(options.context);
+          } catch(err) {
+            error_log('sync','failed parsing Page: '+err.get_message());
+          }
         },
         error : function(data){
           error_log('sync', 'Error while trying to sync page with ' + url);
@@ -389,14 +401,18 @@ $(function() {
         dataType : 'jsonp',
         context : this,
         success : function(data){
-         photos = data.feed.entry;
-         var that = this;
-         var files = [];
-         _.each(photos,function(item,i){
-           files.push({src: item.content.src, thumbsrc: item.content.src.replace('s800','s160-c')});
-         });
-         this.set('thumbnails',files);
-         options.success.call(options.context);
+         try {
+           photos = data.feed.entry;
+           var that = this;
+           var files = [];
+           _.each(photos,function(item,i){
+             files.push({src: item.content.src, thumbsrc: item.content.src.replace('s800','s160-c')});
+           });
+           this.set('thumbnails',files);
+           options.success.call(options.context);
+         } catch(err) {
+           error_log('sync','failed parsing Album: '+err.get_message());
+         }
         },
         error : function(data){
           error_log('sync', 'Error while trying to sync album with albumid ' + id);
@@ -413,29 +429,33 @@ $(function() {
        if( type_filter.filter(new Gist) && !this.fetched ){
          var fetcher = this;
          var success = function(data,filters) {
-           fetcher.fetched = true;
-           var that = this;
-           _.each(data.data, function(gist) {
-             var updated_date = new Date(gist.updated_at);
-             var created_date = new Date(gist.created_at);
-             callback.call(that,new Gist({
-               id : gist.id,
-               title : gist.description,
-               author : gist.user.login,
-               html_url: gist.html_url,
-               updated : {
-                 year : updated_date.getFullYear(),
-                 month : updated_date.getMonth() +1,
-                 day : updated_date.getDay() + 1,
-               },
-               created : {
-                 year : created_date.getFullYear(),
-                 month : created_date.getMonth()+1,
-                 day : created_date.getDay() + 1,
-               }, 
-               files : gist.files,
-             }));
-           });
+           try {
+             fetcher.fetched = true;
+             var that = this;
+             _.each(data.data, function(gist) {
+               var updated_date = new Date(gist.updated_at);
+               var created_date = new Date(gist.created_at);
+               callback.call(that,new Gist({
+                 id : gist.id,
+                 title : gist.description,
+                 author : gist.user.login,
+                 html_url: gist.html_url,
+                 updated : {
+                   year : updated_date.getFullYear(),
+                   month : updated_date.getMonth() +1,
+                   day : updated_date.getDay() + 1,
+                 },
+                 created : {
+                   year : created_date.getFullYear(),
+                   month : created_date.getMonth()+1,
+                   day : created_date.getDay() + 1,
+                 }, 
+                 files : gist.files,
+               }));
+             });
+           } catch(err) {
+             error_log('fetch','failed fetching Gist: '+err.get_message());
+           }
          };
 
          jQuery.ajax({
@@ -459,24 +479,28 @@ $(function() {
        if( type_filter.filter(new BlogItem) && !this.fetched ){
          var fetcher = this;
          var success = function(data) {
-           fetcher.fetched = true;
-           var that = this;
-           _.each(data, function(item) {
-             var created_date = new Date(item.created);
-             callback.call(that,new BlogItem({
-               id : item.id,
-               title : item.title,
-               description : item.description,
-               created : item.created,
-               created : {
-                 year : created_date.getFullYear(),
-                 month : created_date.getMonth()+1,
-                 day : created_date.getDay() + 1,
-               }, 
-               url : item.url,
-               tags : item.tags,
-             }));
-           });
+           try {
+             fetcher.fetched = true;
+             var that = this;
+             _.each(data, function(item) {
+               var created_date = new Date(item.created);
+               callback.call(that,new BlogItem({
+                 id : item.id,
+                 title : item.title,
+                 description : item.description,
+                 created : item.created,
+                 created : {
+                   year : created_date.getFullYear(),
+                   month : created_date.getMonth()+1,
+                   day : created_date.getDay() + 1,
+                 }, 
+                 url : item.url,
+                 tags : item.tags,
+               }));
+             });
+           } catch(err) {
+             error_log('fetch','failed fetching Blog: '+err.get_message());
+           }
          };
 
        jQuery.ajax({
@@ -501,21 +525,25 @@ $(function() {
        if( type_filter.filter(new InstaPaper) && !this.fetched ){
          var fetcher = this;
          var success = function(data) {
-           fetcher.fetched = true;
-           var that = this;
-           _.each(data.query.results.rss.channel.item, function(item) {
-             var created_date = new Date(item.pubDate);
-             callback.call(that,new InstaPaper({
-               title : item.title,
-               description : item.description,
-               created : {
-                 year : created_date.getFullYear(),
-                 month : created_date.getMonth()+1,
-                 day : created_date.getDay() + 1,
-               }, 
-               url : item.link,
-             }));
-           });
+           try {
+             fetcher.fetched = true;
+             var that = this;
+             _.each(data.query.results.rss.channel.item, function(item) {
+               var created_date = new Date(item.pubDate);
+               callback.call(that,new InstaPaper({
+                 title : item.title,
+                 description : item.description,
+                 created : {
+                   year : created_date.getFullYear(),
+                   month : created_date.getMonth()+1,
+                   day : created_date.getDay() + 1,
+                 }, 
+                 url : item.link,
+               }));
+             });
+           } catch(err) {
+             error_log('fetch','failed fetching Instapaper: '+err.get_message());
+           }
          };
 
        jQuery.ajax({
@@ -541,27 +569,31 @@ $(function() {
          if( type_filter.filter(new Page) && !this.fetched ){
            var fetcher = this;
            var success = function(data) {
-             fetcher.fetched = true;
-             var that = this;
-           _.each(data.data, function(page) {
-             if (page.type=='file'){
-               var page = new Page({
-                 name : page.name,
-                 path : page.path,
-                 url : page._links.self,
-               });
-               
-               page.fetch({ 
-                 success: function(model){
-                   callback.call(context,model); 
-                 },
-                 context : context,
-                 error: function(content){
-                   console.log('error');
-                 }
-               });
-             }
-           });
+             try {
+               fetcher.fetched = true;
+               var that = this;
+             _.each(data.data, function(page) {
+               if (page.type=='file'){
+                 var page = new Page({
+                   name : page.name,
+                   path : page.path,
+                   url : page._links.self,
+                 });
+                 
+                 page.fetch({ 
+                   success: function(model){
+                     callback.call(context,model); 
+                   },
+                   context : context,
+                   error: function(content){
+                     console.log('error');
+                   }
+                 });
+               }
+             });
+           } catch(err) {
+             error_log('fetch','failed fetching Pages: '+err.get_message());
+           }
          };
 
        jQuery.ajax({
@@ -589,29 +621,33 @@ $(function() {
          if( type_filter.filter(new Album) && !this.fetched ){
            var fetcher = this;
            var success = function(data) {
-             fetcher.fetched = true;
-             var that = this;
-           _.each(data.feed.entry, function(album) {
-             var updated_date = new Date(album.updated.$t);
-             var created_date = new Date(album.published.$t);
-             callback.call(that,new Album({
-               id : album.gphoto$id.$t,
-               title : album.title.$t,
-               description : album.summary.$t,
-               author : album.author[0].name,
-               updated : {
-                 year : updated_date.getFullYear(),
-                 month : updated_date.getMonth() +1,
-                 day : updated_date.getDay() + 1,
-               },
-               created : {
-                 year : created_date.getFullYear(),
-                 month : created_date.getMonth()+1,
-                 day : created_date.getDay() + 1,
-               },
-               thumbnails: album.media$group.media$thumbnail,
-             }));
-           });
+             try {
+               fetcher.fetched = true;
+               var that = this;
+             _.each(data.feed.entry, function(album) {
+               var updated_date = new Date(album.updated.$t);
+               var created_date = new Date(album.published.$t);
+               callback.call(that,new Album({
+                 id : album.gphoto$id.$t,
+                 title : album.title.$t,
+                 description : album.summary.$t,
+                 author : album.author[0].name,
+                 updated : {
+                   year : updated_date.getFullYear(),
+                   month : updated_date.getMonth() +1,
+                   day : updated_date.getDay() + 1,
+                 },
+                 created : {
+                   year : created_date.getFullYear(),
+                   month : created_date.getMonth()+1,
+                   day : created_date.getDay() + 1,
+                 },
+                 thumbnails: album.media$group.media$thumbnail,
+               }));
+             });
+           } catch(err) {
+             error_log('fetch','failed fetching PicasaAlbum: '+err.get_message());
+           }
          };
 
        jQuery.ajax({
