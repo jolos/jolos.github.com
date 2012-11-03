@@ -1,4 +1,7 @@
 $(function() {
+    window.log_error = function(type, msg) {
+          _gaq.push(['_trackEvent', 'error', type, msg]);
+    }
     window.Router = Backbone.Router.extend({
 
       routes: {
@@ -324,7 +327,7 @@ $(function() {
             options.success.call(options.context);
           },
           error : function(data){
-            Error('Oops','Something went wrong, not everything will work as it should');
+            error_log('sync', 'Error while trying to sync blog with ' + url);
           },
         });
       },
@@ -349,7 +352,7 @@ $(function() {
             options.success.call(options.context);
           },
           error : function(data){
-            console.log(data);
+            error_log('sync', 'Error while trying to sync page with ' + url);
           },
         });
       },
@@ -376,7 +379,7 @@ $(function() {
            options.success.call(options.context);
           },
           error : function(data){
-            Error('Oops','Something went wrong, not everything will work as it should');
+            error_log('sync', 'Error while trying to sync album with albumid ' + id);
           },
         });
       },
@@ -420,7 +423,7 @@ $(function() {
               context : context,
               success : success,
               error : function(data){
-                Error('Oops','Something went wrong, not everything will work as it should');
+                error_log('fetch', 'Error while trying to fetch gists);
               },
            });
        }
@@ -463,7 +466,7 @@ $(function() {
               success.call(this,json);
             },
             error : function(data){
-              Error('Oops','Something went wrong, not everything will work as it should');
+              error_log('fetch', 'Error while trying to fetch blogs);
             },
          });
         }
@@ -502,7 +505,7 @@ $(function() {
             success.call(this,json);
           },
           error : function(data){
-            Error('Oops','Something went wrong, not everything will work as it should');
+            error_log('fetch', 'Error while trying to fetch instapaper);
           },
         });
        }
@@ -550,7 +553,7 @@ $(function() {
             },
             success : success,
             error : function(data){
-              Error('Oops','Something went wrong, not everything will work as it should');
+              error_log('fetch', 'Error while trying to fetch pages);
             },
           });
         }
@@ -596,7 +599,7 @@ $(function() {
             context : context,
             success : success,
             error : function(data){
-              Error('Oops','Something went wrong, not everything will work as it should');
+              error_log('fetch', 'Error while trying to fetch albums);
             },
           });
         }
