@@ -861,7 +861,7 @@ $(function() {
       }
       // replace the html of the element
       $(this.el).html(html);
-      if (this.cuurent_state != 'start'){
+      if (this.current_state != 'start'){
         this.$('.body a').colorbox({rel: 'thumbnails'});
       }
       // return an instance of the view
