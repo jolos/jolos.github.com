@@ -4288,6 +4288,192 @@ div.start .meta {
   display: none;
 }
 
+/*
+    ColorBox Core Style:
+    The following CSS is consistent between example themes and should not be altered.
+*/
+/* line 112, ../sass/app.scss */
+#colorbox, #cboxOverlay, #cboxWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* line 113, ../sass/app.scss */
+#cboxOverlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* line 114, ../sass/app.scss */
+#cboxMiddleLeft, #cboxBottomLeft {
+  clear: left;
+}
+
+/* line 115, ../sass/app.scss */
+#cboxContent {
+  position: relative;
+}
+
+/* line 116, ../sass/app.scss */
+#cboxLoadedContent {
+  overflow: auto;
+}
+
+/* line 117, ../sass/app.scss */
+#cboxTitle {
+  margin: 0;
+}
+
+/* line 118, ../sass/app.scss */
+#cboxLoadingOverlay, #cboxLoadingGraphic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* line 119, ../sass/app.scss */
+#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow {
+  cursor: pointer;
+}
+
+/* line 120, ../sass/app.scss */
+.cboxPhoto {
+  float: left;
+  margin: auto;
+  border: 0;
+  display: block;
+  max-width: none;
+}
+
+/* line 121, ../sass/app.scss */
+.cboxIframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+/* line 122, ../sass/app.scss */
+#colorbox, #cboxContent, #cboxLoadedContent {
+  box-sizing: content-box;
+}
+
+/* 
+    User Style:
+    Change the following styles to modify the appearance of ColorBox.  They are
+    ordered & tabbed in a way that represents the nesting of the generated HTML.
+*/
+/* line 129, ../sass/app.scss */
+#cboxOverlay {
+  background: #fff;
+}
+
+/* line 131, ../sass/app.scss */
+#colorbox #cboxContent {
+  margin-top: 32px;
+  overflow: visible;
+}
+/* line 132, ../sass/app.scss */
+#colorbox .cboxIframe {
+  background: #fff;
+}
+/* line 133, ../sass/app.scss */
+#colorbox #cboxError {
+  padding: 50px;
+  border: 1px solid #ccc;
+}
+/* line 134, ../sass/app.scss */
+#colorbox #cboxLoadedContent {
+  background: #000;
+  padding: 1px;
+}
+/* line 135, ../sass/app.scss */
+#colorbox #cboxLoadingGraphic {
+  background: url(images/loading.gif) no-repeat center center;
+}
+/* line 136, ../sass/app.scss */
+#colorbox #cboxLoadingOverlay {
+  background: #000;
+}
+/* line 137, ../sass/app.scss */
+#colorbox #cboxTitle {
+  position: absolute;
+  top: -22px;
+  left: 0;
+  color: #000;
+}
+/* line 138, ../sass/app.scss */
+#colorbox #cboxCurrent {
+  position: absolute;
+  top: -22px;
+  right: 205px;
+  text-indent: -9999px;
+}
+/* line 139, ../sass/app.scss */
+#colorbox #cboxSlideshow, #colorbox #cboxPrevious, #colorbox #cboxNext, #colorbox #cboxClose {
+  text-indent: -9999px;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -20px;
+  background: url(images/controls.png) no-repeat 0 0;
+}
+/* line 140, ../sass/app.scss */
+#colorbox #cboxPrevious {
+  background-position: 0px 0px;
+  right: 44px;
+}
+/* line 141, ../sass/app.scss */
+#colorbox #cboxPrevious:hover {
+  background-position: 0px -25px;
+}
+/* line 142, ../sass/app.scss */
+#colorbox #cboxNext {
+  background-position: -25px 0px;
+  right: 22px;
+}
+/* line 143, ../sass/app.scss */
+#colorbox #cboxNext:hover {
+  background-position: -25px -25px;
+}
+/* line 144, ../sass/app.scss */
+#colorbox #cboxClose {
+  background-position: -50px 0px;
+  right: 0;
+}
+/* line 145, ../sass/app.scss */
+#colorbox #cboxClose:hover {
+  background-position: -50px -25px;
+}
+/* line 146, ../sass/app.scss */
+#colorbox .cboxSlideshow_on #cboxPrevious, #colorbox .cboxSlideshow_off #cboxPrevious {
+  right: 66px;
+}
+/* line 147, ../sass/app.scss */
+#colorbox .cboxSlideshow_on #cboxSlideshow {
+  background-position: -75px -25px;
+  right: 44px;
+}
+/* line 148, ../sass/app.scss */
+#colorbox .cboxSlideshow_on #cboxSlideshow:hover {
+  background-position: -100px -25px;
+}
+/* line 149, ../sass/app.scss */
+#colorbox .cboxSlideshow_off #cboxSlideshow {
+  background-position: -100px 0px;
+  right: 44px;
+}
+/* line 150, ../sass/app.scss */
+#colorbox .cboxSlideshow_off #cboxSlideshow:hover {
+  background-position: -75px -25px;
+}
+
 /* CSS for jQuery Reveal Plugin
  * Maintained for Foundation. foundation.zurb.com
  * Free to use under the MIT license.
