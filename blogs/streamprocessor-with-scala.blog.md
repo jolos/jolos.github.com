@@ -11,4 +11,6 @@ The rickshaw library is only used to visualise the data that the stream processo
 My minimal streamprocessor is based on 2 concepts : Taps and Sinks. They are similar to Storm's Spout and Bolt concepts. A Tap will generate the stream, typically by getting data from an external system. In my application it listens to messages from statd daemons, but it could also fetchtweets from the twitter firehose. A Tap is in fact just a wrapper around an Enumerator ( for documentation on Iteratees check the play framework wiki ). A Sink is the endpoint ( in my example application it sends messages over a websocket ). You can connect a Tap with a Sink by providing an Enumeratee that will transform the stream, an example might be filtering tweets on hashtag.
  Enumeratee's are very powerful but I must admit that I'm not fully comfortable with the concept yet, so I still need to find out if there're things you can't do with Enumeratee's. I guess I'll have to find out while adding features.
 
-To end a screenshot to show how it looks, if you want you can try it yourself, the code is available in my [repo](http://github.com/jolos/streamprocessor.png).
+To end a screenshot to show how it looks, if you want you can try it yourself, the code is available in my [repo](http://github.com/jolos/streamprocessor)
+
+![statsd test](http://jolos.github.com/images/streamprocessor.png).
