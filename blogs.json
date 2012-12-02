@@ -1,5 +1,11 @@
 [
-  	{ 
+  { 
+		"id" : "streamprocessor-with-scala.blog.md",
+		"title" : "A minimal streamprocessor",
+		"tags"  : ["scala", "tech"],
+		"created" : "December 2, 2012"
+	},
+  { 
 		"id" : "a-new-website-v2.blog.md",
 		"title" : "A new website v2",
 		"tags"  : ["site"],
