@@ -9,7 +9,7 @@
 		"id" : "a-new-website-v2.blog.md",
 		"title" : "A new website v2",
 		"tags"  : ["site"],
-		"created" : "Octobre 21, 2012"
+		"created" : "October 21, 2012"
 	},
 	{ 
 		"id" : "a-new-website.blog.md",
@@ -21,7 +21,7 @@
 		"id"	: "two-weeks-of-japan.blog.md",
 		"tags"  : ["Japan","iaeste"],
 		"title" : "Two Weeks of Japan",
-		"created" : "July 27, 201",
+		"created" : "July 27, 2011",
 	},
 	{ 
 		"id"	: "realtime-searching-logstash.blog.md",

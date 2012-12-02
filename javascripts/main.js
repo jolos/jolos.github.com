@@ -1069,7 +1069,7 @@ $(function() {
         this.items.filteredItems.bind('add', this.addItem, this);
         this.items.fetchers.push(new GistFetcher('jolos'));
         this.items.fetchers.push(new PicasaFetcher("103884336232903331378"));
-        this.items.fetchers.push(new BlogFetcher('./json/blogs.json'));
+        this.items.fetchers.push(new BlogFetcher('./blogs.json'));
         this.items.fetchers.push(new PageFetcher('jolos', 'jolos.github.com','pages'));
         this.items.fetchers.push(new InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
         this.factory = new ViewFactory();
