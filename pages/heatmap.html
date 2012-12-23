@@ -1,0 +1,121 @@
+  <div class="row">
+		<div class="twelve columns">
+			<div id="heatmap" style="position: relative; width: 1000px; height:1000px;">
+				 <svg width="970" height="500">
+				   <defs>
+					 <radialGradient id="Gradient" cx="0.5" cy="0.5" r="0.25" fx="0.5" fy="0.5">
+					     <stop offset="0%"  stop-opacity="0.4"/>
+					     <stop offset="100%" stop-opacity="0"/>
+					  </radialGradient>
+				   </defs>
+				   </svg>
+			</div>
+			<img id="rasterized"/>
+		</div>
+	</div>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript">
+  function randomdata(points, w, h) {
+	       var data = [];
+	       var randomset = {};
+	       var max = Math.floor(Math.random()*1000+1);
+
+	       while(points--){
+		    data.push({x: Math.floor(Math.random()*w+1), y: Math.floor(Math.random()*h+1), count: Math.floor(Math.random()*max+1)});
+	       }
+	       randomset.data = data;					                
+	       return randomset;
+	}
+
+	function svgDataURL(svg) {
+		  var svgAsXML = (new XMLSerializer).serializeToString(svg);
+		    return "data:image/svg+xml," + encodeURIComponent(svgAsXML);
+	}
+
+	// build pallete
+	
+	function buildPallete(gradient){
+		var gradientcanvas = document.createElement("canvas");
+		gradientcanvas.width = "1";
+		gradientcanvas.height = "256";
+		gradctx = gradientcanvas.getContext("2d");
+		grad = gradctx.createLinearGradient(0,0,1,256);
+		for (var x in gradient) {
+			    grad.addColorStop(x, gradient[x]);
+		}
+		gradctx.fillStyle = grad;
+		gradctx.fillRect(0,0,1,256);
+		var gradimg = gradctx.getImageData(0,0,1,256);
+		return gradimg.data;
+	}
+
+	function colorize(ctx,w,h,opacity,pallete) {
+		function alphatocolors(alpha){
+			var colors = [pallete[alpha*4], pallete[alpha*4+1], pallete[alpha*4+2]];
+			return colors;
+		}
+
+		image = ctx.getImageData(0, 0, w, h);
+		data = image.data;    
+		for(var i=3; i < data.length; i+=4){
+			var alpha = data[i];
+
+			if (alpha > 5) {
+				var colors = alphatocolors(alpha);
+				data[i-3] = colors[0];
+				data[i-2] = colors[1];
+				data[i-1] = colors[2];
+				data[i] = opacity;
+
+			} else {
+				data[i-3] = 0;
+				data[i-2] = 0;
+				data[i-1] = pallete[0];
+				data[i] = 0;
+			}
+		}
+		ctx.putImageData(image, 0, 0);
+	}
+	
+	function randData() {
+		var data = []
+		var cnt = 5000;
+		while(cnt--){
+			data.push({x: Math.random()*18000, y:Math.random()*36000 });
+		}
+		return data;
+	}
+
+	function addHeatmap(map,svg,sw,sh,w,h,pallete) {
+		var canvas = document.createElement("canvas");
+		canvas.setAttribute('width',w);
+		canvas.setAttribute('height',h);
+		var ctx = canvas.getContext('2d');
+		svgImg = new Image;
+		svgImg.onload = function() {
+			    ctx.drawImage(svgImg,0,0,sw,sh,0,0, w, h);
+			    colorize(ctx,w,h,128,pallete);
+
+			var imageBounds = [[-90,-180], [90,180]];
+			console.log(canvas.toDataURL());
+			document.getElementById('test').setAttribute('src', canvas.toDataURL());
+			var imageoverlay = L.imageOverlay(canvas.toDataURL(), imageBounds)
+			imageoverlay.addTo(map);
+		}
+		svgImg.width = sw;
+		svgImg.height = sh;
+		svgImg.src = svgDataURL(svg);
+	}
+
+	gradient = { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)"};
+	var pallete = buildPallete(gradient);
+	var svg= d3.select("div svg");
+	var svgel = document.querySelector('svg');
+	svg.selectAll("circle")
+	    .data(randData)
+	    .enter().append("circle")
+	    .attr("cy", function(i){return i.x;})
+	    .attr("cx", function(i){ return i.y;})
+	    .attr("r", function(){ return Math.random()*500;})
+	    .attr("fill","url('#Gradient')");
+</script>
