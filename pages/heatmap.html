@@ -86,7 +86,7 @@
 		return data;
 	}
 
-	function addHeatmap(map,svg,sw,sh,w,h,pallete) {
+	function renderHeatmap(img,svg,sw,sh,w,h,pallete) {
 		var canvas = document.createElement("canvas");
 		canvas.setAttribute('width',w);
 		canvas.setAttribute('height',h);
@@ -98,7 +98,7 @@
 
 			var imageBounds = [[-90,-180], [90,180]];
 			console.log(canvas.toDataURL());
-			document.getElementById('test').setAttribute('src', canvas.toDataURL());
+			img.setAttribute('src', canvas.toDataURL());
 			var imageoverlay = L.imageOverlay(canvas.toDataURL(), imageBounds)
 			imageoverlay.addTo(map);
 		}
@@ -116,6 +116,8 @@
 	    .enter().append("circle")
 	    .attr("cy", function(i){return i.x;})
 	    .attr("cx", function(i){ return i.y;})
-	    .attr("r", function(){ return Math.random()*500;})
+	    .attr("r", function(){ return Math.random()*50;})
 	    .attr("fill","url('#Gradient')");
+	var img = document.getElementByID("rasterized");
+	renderHeatmap(img, svgel, 970,500, 970,500,pallete)
 </script>
