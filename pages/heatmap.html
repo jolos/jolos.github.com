@@ -118,6 +118,6 @@
 	    .attr("cx", function(i){ return i.y;})
 	    .attr("r", function(){ return Math.random()*50;})
 	    .attr("fill","url('#Gradient')");
-	var img = document.getElementByID("rasterized");
+	var img = document.getElementById("rasterized");
 	renderHeatmap(img, svgel, 970,500, 970,500,pallete)
 </script>
