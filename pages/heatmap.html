@@ -1,6 +1,6 @@
   <div class="row">
 		<div class="twelve columns">
-			<div id="heatmap" style="position: relative; width: 1000px; height:1000px;">
+			<div id="heatmap">
 				 <svg width="970" height="500">
 				   <defs>
 					 <radialGradient id="Gradient" cx="0.5" cy="0.5" r="0.25" fx="0.5" fy="0.5">
@@ -9,8 +9,9 @@
 					  </radialGradient>
 				   </defs>
 				   </svg>
+				   <img id="rasterized"/>
 			</div>
-			<img id="rasterized"/>
+	
 		</div>
 	</div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
