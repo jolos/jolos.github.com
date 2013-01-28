@@ -1,4 +1,4 @@
-function run_tests(Fetchers, stubs, Q) {
+function run_tests(Fetchers, stubs, Q, Models, Views) {
   sinon.config = {
         injectIntoThis: true,
         injectInto: null,
@@ -7,6 +7,8 @@ function run_tests(Fetchers, stubs, Q) {
         useFakeServer: false,
   };
   
+  module('fetchers');
+
   test("Test PageFetcher",function () {
     stop();
     // we expect 3 assertions
@@ -389,6 +391,31 @@ function run_tests(Fetchers, stubs, Q) {
   });
 
 
+  module('views');
 
+  test("Test PageView", function(){
+    var m = new Models.Page({content: "<h1>testtext</h1>"});
+    var view =new Views.PageView({model:m});
+    view.render();
+    equal(view.$('h1').text(),'testtext');
+  });
+
+  test("Test InstaPaperView", function(){
+    var m = new Models.InstaPaper({
+      title: "title",
+      url: "http://jolos.github.com",
+      description: "<div>summary</div>",
+      created: {
+        day: "1",
+        month: "1",
+        year: "2013",
+      },
+    });
+
+    var view =new Views.InstaPaperView({model:m});
+    view.render();
+    equal(view.$('a').attr('href'), 'http://jolos.github.com');
+  });
+  // TODO: write tests that interact with the views
 }
 

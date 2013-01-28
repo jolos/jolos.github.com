@@ -22,6 +22,9 @@
 				    'underscore' : {
 					    exports : '_',
 				    },
+				    'mustache' : {
+					    exports : 'Mustache',
+				    },
 				    'backbone' : {
 					    deps: ['underscore'],
 					    exports : 'Backbone', 
@@ -29,7 +32,7 @@
 			    }
 		        });
 
-			require(['fetchers','stub_responses','q'], run_tests);
+			require(['fetchers','stub_responses','q','models','views'], run_tests);
 		</script>
 	</body>
 </html>
