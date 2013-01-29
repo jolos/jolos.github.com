@@ -29,11 +29,6 @@ $(function() {
         Backbone.history.start();
         this.bind('route:default',this.appview.items.clean,this.appview.items);
         this.bind('route:default',draw);
-        // TODO load fetchers module. + define fetchers
-      },
-
-      fetch: funtion(filter) {
-        // TODO: start all fetchers 
       },
 
       default : function(actions){
@@ -288,9 +283,6 @@ $(function() {
     }
   }
 
-  /**
-   * ViewFactory, allows to build a view given a model
-   */
   window.ViewFactory = function() {
   };
 
@@ -314,34 +306,6 @@ $(function() {
     },
   });
 
-  window.AbstractFetcher = function() {
-  };
-  
-  _.extend(AbstractFetcher.prototype,{
-    getParams : function(){
-      return {
-        url : this.url,
-        dataType : this.dataType,
-      };
-    },
-    request : function(params) {
-      return jQuery.ajax(params);
-    },
-    fetch : function() {
-      var that = this;
-      return Q.when(this.request(this.getParams()))
-      .then(function(json){
-        return that.parse(json);
-      })
-      .fail(function(err){ 
-        console.log(err);
-      });
-    },
-  });
-
-  /**
-   * Abstract Item, should not be instanced directly
-   */
   window.Item = Backbone.Model.extend({
     sync: function(method,model,options){
     },
@@ -456,38 +420,6 @@ $(function() {
       });
     },
   });
-
-  window.TestFetcher = function(dataType,url){
-    this.url = url;
-    this.dataType = dataType;
-  }
-
-  _.extend(TestFetcher.prototype, 
-      AbstractFetcher.prototype,
-      {
-       parse : function(data) {
-         var items = [];
-         _.each(data, function(item) {
-           var created_date = new Date(item.created);
-           items.push(new BlogItem({
-             id : item.id,
-             title : item.title,
-             description : item.description,
-             created : item.created,
-             created : {
-               year : created_date.getFullYear(),
-               month : created_date.getMonth()+1,
-               day : created_date.getDay() + 1,
-             }, 
-             url : item.url,
-             tags : item.tags,
-           }));
-         });
-         return items;
-      }
-    }
-  );
-
 
   window.GistFetcher = function(username) {
      var baseurl = 'https://api.github.com/users/' + username +'/gists'; 
@@ -631,7 +563,7 @@ $(function() {
 
 
   window.PageFetcher = function(user,repo,folder) {
-     this.url = 'https://api.github.com/repos/'+user+'/'+repo+'/contents/'+folder;
+     var url = 'https://api.github.com/repos/'+user+'/'+repo+'/contents/'+folder;
      this.fetched = false;
      this.fetch = function(type_filter, callback, context) {
          if( type_filter.filter(new Page) && !this.fetched ){
@@ -680,30 +612,6 @@ $(function() {
       }
     }
   };
-
-  _.extend(PageFetcher.prototype, 
-      AbstractFetcher.prototype,
-      {
-        parse : function(data) {
-           var that = this;
-           var promises = [];
-           _.each(data.data, function(page) {
-               if (page.type=='file'){
-                 var page = new Page({
-                   name : page.name,
-                   path : page.path,
-                   url : page._links.self,
-                 });
-                 
-                 promises.push(Q.when(
-                  page.fetch()
-                 ));
-               }
-           });
-          return promises;
-        }
-      }
-  );
 
   window.PicasaFetcher = function(uid) {
      var baseurl = 'https://picasaweb.google.com/data/feed/api/user/' + uid + '?alt=json';
@@ -765,17 +673,12 @@ $(function() {
       this.filteredItems = new FilteredItemList;
     },
     
-    fetch : function(type_filter, reset=false) {
+    fetch : function(type_filter) {
       var that = this;
-      _.each(this.fetchers, function(fetcher, i) {
-        if (!reset && !this.fetched) {
-          var promise = fetcher.fetch(type_filter,that)
-          .then(function(items){ 
-            that.add(items);
-          }, function(err){
-            console.log(err);
-          });
-        }
+      _.each(this.fetchers,function(fetcher, i) {
+        fetcher.fetch(type_filter,function(item){ 
+          this.add(item);
+        }, that);
       });
     },
 
@@ -1163,15 +1066,12 @@ $(function() {
 
       initialize : function() {
         this.items = new ItemList();
-        this.items.filteredItems.bind('add', this.addItem, this); // <- TODO should be instantiated once the views are loaded.
-        this.items.fetchers.push(new TestFetcher('json', './blogs.json'));
-        /*this.items.fetchers.push(new GistFetcher('jolos'));
+        this.items.filteredItems.bind('add', this.addItem, this);
+        this.items.fetchers.push(new GistFetcher('jolos'));
         this.items.fetchers.push(new PicasaFetcher("103884336232903331378"));
         this.items.fetchers.push(new BlogFetcher('./blogs.json'));
         this.items.fetchers.push(new PageFetcher('jolos', 'jolos.github.com','pages'));
-        this.items.fetchers.push(new InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));*/
-        // TODO: load Views module, once loaded connect this view's list to a
-        // filtertlist. and start percolating.
+        this.items.fetchers.push(new InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
         this.factory = new ViewFactory();
         this.factory.register(Gist,GistView);
         this.factory.register(Album,AlbumView);
