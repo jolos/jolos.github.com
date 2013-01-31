@@ -2,7 +2,8 @@ define('models',['backbone', 'underscore', 'q'],
   function(Backbone, _, Q) {
     var module = function() {
   /**
-   * Abstract Item, should not be instantiated directly
+   * Abstract Item, should not be instantiated directly. 
+   * TODO: could be a mixin.
    */
   this.Item = Backbone.Model.extend({
     // Default parse method

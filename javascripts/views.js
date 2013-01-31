@@ -1,6 +1,7 @@
-define('views',['backbone', 'underscore','mustache'],
-  function(Backbone, _, Mustache) {
+define('views',['backbone', 'underscore','mustache', 'q'],
+  function(Backbone, _, Mustache, Q) {
     var module = function() {
+      // TODO: StateView could be a mixin instead of a full blown object.
       this.StateView = function(options){
         Backbone.View.apply(this,[options]);
       }
@@ -17,6 +18,10 @@ define('views',['backbone', 'underscore','mustache'],
         transitions : {
           '*' : {},
         },
+
+        getCurrentState : function() {
+          return this.current_state;
+        },
         
         // callback should always return a promise.
         setTransition : function(start_state, end_state, callback) {
@@ -28,24 +33,32 @@ define('views',['backbone', 'underscore','mustache'],
           }
         },
 
-        // TODO: refactor to work with promises.
-        doTransition: function(next_state) {
+        doTransition: function(next_state, quiet=false) {
           var transitions = this.transitions[this.current_state];
 
+          var that = this;;
           var successcallback = function(){
-            this.trigger(this.current_state + '->' + next_state);
-            this.$el.toggleClass(this.current_state);
-            this.current_state = next_state;
-            this.$el.toggleClass(this.current_state);
+            var prev_state = that.current_state;
+            that.current_state = next_state;
+            // Trigger the event.
+            if (!quiet){
+              that.trigger(prev_state + ':' + next_state);
+            }
           }
 
           if (transitions && transitions[next_state]) {
             var callback = transitions[next_state];
-            callback.call(this,successcallback);
+             var promise = callback.call(this);
+             promise.done(successcallback);
+             return promise;
           } else if (this.transitions['*'][next_state]) {
             var callback = this.transitions['*'][next_state];
-            callback.call(this,successcallback);
+            var promise = callback.call(this);
+            promise.done(successcallback);
+            return promise;
           }
+          
+          return Q.reject('unvalid-state');
         },
 
         render : function(){

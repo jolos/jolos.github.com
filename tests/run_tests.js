@@ -416,6 +416,39 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
     view.render();
     equal(view.$('a').attr('href'), 'http://jolos.github.com');
   });
+
+
+  test("Test StateView", function(){
+    expect(5);
+    var v = new Views.StateView({});
+    v.states.push('end');
+
+    v.setTransition('start', 'end', function(){
+      return Q.fulfill("ok");
+    });
+
+    v.on('start:end', function(evt){
+      ok(true, 'Successfully catched start:end transition');
+    });
+
+    equal(v.getCurrentState(), 'start', 'Initial state is start');
+
+    var promise = v.doTransition('end');
+    
+    promise.finally(function(){
+
+      ok(promise.isFulfilled(), "Successfully transitioned to state end");
+
+      equal(v.getCurrentState(), 'end', 'State after transition is state end');
+
+      var failpromise = v.doTransition('start');
+
+      ok(failpromise.isRejected(), "Failed invalid transition end -> start");
+      start();
+    });
+    stop();
+    
+  });
   // TODO: write tests that interact with the views
 }
 
