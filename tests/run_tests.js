@@ -419,7 +419,7 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
 
   test("Test StateView", function(){
-    expect(5);
+    expect(6);
     var v = new Views.StateView({});
     v.states.push('end');
 
@@ -444,11 +444,14 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
       var failpromise = v.doTransition('start');
 
       ok(failpromise.isRejected(), "Failed invalid transition end -> start");
+
+      equal(v.getCurrentState(), 'end', 'State after invalid transition is end');
       start();
     });
     stop();
     
   });
-  // TODO: write tests that interact with the views
+
+  // TODO: write higher level tests that interact with the views/dom
 }
 
