@@ -1,15 +1,18 @@
+/*jslint indent: 2, browser: true */
+/*global sinon,test,module, stop, equal, start*/
 function run_tests(Fetchers, stubs, Q, Models, Views) {
+  'use strict';	
   sinon.config = {
-        injectIntoThis: true,
-        injectInto: null,
-        properties: ["spy", "stub", "mock", "clock", "sandbox"],
-        useFakeTimers: true,
-        useFakeServer: false,
+    injectIntoThis: true,
+    injectInto: null,
+    properties: ["spy", "stub", "mock", "clock", "sandbox"],
+    useFakeTimers: true,
+    useFakeServer: false
   };
-  
+ 
   module('fetchers');
 
-  test("Test PageFetcher",function () {
+  test("Test PageFetcher", function () {
     stop();
     // we expect 3 assertions
     expect(3);
@@ -21,28 +24,29 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
     server.respondWith(
       'GET',
       "/testpages",
-      ["200", { "Content-Type": "application/json" },
-      stubs.pagesresponse]
+      ["200", { "Content-Type": "application/json" }, stubs.pagesresponse]
     );
 
     var fetcher = new Fetchers.PageFetcher();
 
     // TODO, getting sinon to fake the real response is too difficult.
-    fetcher.getParams = function(){
+    fetcher.getParams = function() {
       return {
         dataType: 'json',
         url : '/testpages'
       }
-    }
+    };
 
-    var promise = fetcher.fetch();
-    var parseorigin = fetcher.parse;
-    var that = this;
+    var promise, parseorigin, that;
+    promise = fetcher.fetch();
+    parseorigin = fetcher.parse;
+    that = this;
     // When we're doing the async call, the xhr object will be reset, so we need
     // to create the fakeserver again, by wrapping the parse method
     // TODO: maybe there's a better way?
-    fetcher.parse = function(data) {
-      var server = sinon.fakeServer.create();
+    fetcher.parse = function (data) {
+      var server, result;
+      server = sinon.fakeServer.create();
       server.autoRespond = true;
 
       server.respondWith(
@@ -50,37 +54,37 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
         "/page/1.html",
         ["200", { "Content-Type" : "text/html"}, "<div>stubhtml</div>"]
       );
-      var result = parseorigin(data);
+
+      result = parseorigin(data);
       server.respond();
       return result;
-    }
+    };
 
     var items = [];
-    promise.then(function(promises){
+    promise.then(function (promises) {
       equal(promises.length, 1, "Array with promises has length 1");
       // add an extra operation to the existing promises
       var newpromises = [];
-      promises.forEach(function(promise) {
+      promises.forEach(function (promise) {
         // Once a promise is fulfilled, push the value into the items array
-        console.log(promise);
-        newpromises.push(promise.then(function(item){
+        newpromises.push(promise.then(function (item) {
           items.push(item);
           return item;
-        }).fail(function(err){
+        }).fail(function (err) {
           console.log(err);
         }));
       });
       
       // combine the array of promises into 1 promise.
-      return Q.all(newpromises);	
-    }, function(err){
+      return Q.all(newpromises);
+    }, function (err) {
       ok(false, ":-/");
-    }).then(function(result) { 
-       equal(items.length, 1, "1 Page added to array");
-       equal(result[0].get('content'), "<div>stubhtml</div>", "Retrieved html has expected value");
-    }).fail(function(err){
+    }).then(function (result) {
+      equal(items.length, 1, "1 Page added to array");
+      equal(result[0].get('content'), "<div>stubhtml</div>", "Retrieved html has expected value");
+    }).fail(function (err) {
        ok(false, "Fetching Pages failed");
-    }).done(function(){
+    }).done(function () {
       server.restore();
       start();
     });
@@ -91,15 +95,16 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
   test("Test PageFetcher (no stub)", 1,function () {
     sinon.config.useFakeServer = false;
     stop();
+    var fetcher, promise, items;
 
-    var fetcher = new Fetchers.PageFetcher('jolos', 'jolos.github.com','pages')
+    fetcher = new Fetchers.PageFetcher('jolos', 'jolos.github.com', 'pages');
 
-    var promise = fetcher.fetch();
-    var items = [];
-    promise.then(function(promises){
+    promise = fetcher.fetch();
+    items = [];
+    promise.then(function (promises) {
       var newpromises = [];
-      promises.forEach(function(promise) {
-        newpromises.push(promise.then(function(item){
+      promises.forEach(function (promise) {
+        newpromises.push(promise.then(function (item) {
           items.push(item);
           return item;
         }));
@@ -107,51 +112,51 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
       // We could use the original 'promises' array here, as these are not
       // asynchronous promises.
-      return Q.all(newpromises);	
-    }, function(err){
+      return Q.all(newpromises);
+    }, function (err) {
       ok(false, "Parsing Failed");
-    }).then(function(result) { 
+    }).then(function (result) {
        ok(items.length, "Array is not empty");
-    }).fail(function(err){
+    }).fail(function (err) {
        ok(false, "Fetching From github failed");
-    }).done(function(){ 
+    }).done(function () {
       start();
     });
   });
 
 
-  test("Test BlogFetcher", 1,function () {
+  test("Test BlogFetcher", 1, function () {
     stop();
-    var server = sinon.fakeServer.create();
+    var server, fetcher, promise, items;
+    server = sinon.fakeServer.create();
     server.autoRespond = true;
 
     server.respondWith(
       "GET", "/test",
-      ["200", { "Content-Type": "application/json" },
-      stubs.blogsresponse]
+      ["200", { "Content-Type": "application/json" }, stubs.blogsresponse]
     );
 
-    var fetcher = new Fetchers.BlogFetcher('json', '/test');
-    var promise = fetcher.fetch();
-    var items = [];
-    promise.then(function(promises){
+    fetcher = new Fetchers.BlogFetcher('json', '/test');
+    promise = fetcher.fetch();
+    items = [];
+    promise.then(function (promises) {
       var newpromises = [];
-      promises.forEach(function(promise) {
-        newpromises.push(promise.then(function(item){
+      promises.forEach(function (promise) {
+        newpromises.push(promise.then(function (item) {
           items.push(item);
         }));
       });
 
       // We could use the original 'promises' array here, as these are not
       // asynchronous promises.
-      return Q.all(newpromises);	
-    }, function(err){
+      return Q.all(newpromises);
+    }, function(err) {
       ok(false, ":-/");
-    }).then(function() { 
-       equal(items.length, 5, "5 BlogItems added to array");
-    }).fail(function(err){
-       ok(false, "Fetching Blogs failed");
-    }).done(function(){ 
+    }).then(function () {
+      equal(items.length, 5, "5 BlogItems added to array");
+    }).fail(function (err) {
+      ok(false, "Fetching Blogs failed");
+    }).done(function () { 
       server.restore();
       start();
     });
@@ -159,9 +164,10 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
     server.respond();
   });
 
-  test("Test GistFetcher (with stub)", 1,function () {
+  test("Test GistFetcher (with stub)", 1, function () {
     stop();
-    var server = sinon.fakeServer.create();
+    var server, fetcher, promise, items;
+    server = sinon.fakeServer.create();
     server.autoRespond = true;
 
     server.respondWith(
@@ -170,16 +176,16 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
       stubs.gistsresponse]
     );
 
-    var fetcher = new Fetchers.GistFetcher();
+    fetcher = new Fetchers.GistFetcher();
     fetcher.url = '/gists';
     fetcher.dataType = 'json';
 
-    var promise = fetcher.fetch();
-    var items = [];
-    promise.then(function(promises){
+    promise = fetcher.fetch();
+    items = [];
+    promise.then(function (promises) {
       var newpromises = [];
-      promises.forEach(function(promise) {
-        newpromises.push(promise.then(function(item){
+      promises.forEach(function (promise) {
+        newpromises.push(promise.then(function (item) {
           items.push(item);
           return item;
         }));
@@ -187,14 +193,14 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
       // We could use the original 'promises' array here, as these are not
       // asynchronous promises.
-      return Q.all(newpromises);	
-    }, function(err){
+      return Q.all(newpromises);
+    }, function (err) {
       ok(false, ":-/");
-    }).then(function(result) { 
+    }).then(function (result) {
        equal(items.length, 1, "1 Gist added to array");
-    }).fail(function(err){
+    }).fail(function (err) {
        ok(false, "Fetching Gists failed");
-    }).done(function(){ 
+    }).done(function () {
       server.restore();
       start();
     });
@@ -202,18 +208,19 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
     server.respond();
   });
 
-  test("Test GistFetcher (no stub)", 1,function () {
+  test("Test GistFetcher (no stub)", 1, function () {
+    var fetcher, promise, items;
+    items = [];
     sinon.config.useFakeServer = false;
     stop();
 
-    var fetcher = new Fetchers.GistFetcher('jolos');
+    fetcher = new Fetchers.GistFetcher('jolos');
+    promise = fetcher.fetch();
 
-    var promise = fetcher.fetch();
-    var items = [];
-    promise.then(function(promises){
+    promise.then(function (promises) {
       var newpromises = [];
-      promises.forEach(function(promise) {
-        newpromises.push(promise.then(function(item){
+      promises.forEach(function (promise) {
+        newpromises.push(promise.then(function (item) {
           items.push(item);
           return item;
         }));
@@ -221,39 +228,39 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
       // We could use the original 'promises' array here, as these are not
       // asynchronous promises.
-      return Q.all(newpromises);	
-    }, function(err){
+      return Q.all(newpromises);
+    }, function (err) {
       ok(false, "Parsing Failed");
-    }).then(function(result) { 
+    }).then(function (result) {
        ok(items.length, "Array is not empty");
-    }).fail(function(err){
+    }).fail(function (err) {
        ok(false, "Fetching Instapaer failed");
-    }).done(function(){ 
+    }).done(function () {
       start();
     });
   });
 
-  test("Test InstaPaperFetcher (with stub)", 1,function () {
+  test("Test InstaPaperFetcher (with stub)", 1, function () {
     stop();
-    var server = sinon.fakeServer.create();
+    var server, fetcher, items, promise;
+    server = sinon.fakeServer.create();
     server.autoRespond = true;
 
     server.respondWith(
       "GET", "/instapaper",
-      ["200", { "Content-Type": "application/json" },
-      stubs.instapaper]
+      ["200", { "Content-Type": "application/json" }, stubs.instapaper]
     );
 
-    var fetcher = new Fetchers.InstaPaperFetcher();
+    fetcher = new Fetchers.InstaPaperFetcher();
     fetcher.url = '/instapaper';
     fetcher.dataType = 'json';
 
-    var promise = fetcher.fetch();
-    var items = [];
-    promise.then(function(promises){
+    promise = fetcher.fetch();
+    items = [];
+    promise.then(function (promises) {
       var newpromises = [];
-      promises.forEach(function(promise) {
-        newpromises.push(promise.then(function(item){
+      promises.forEach(function (promise) {
+        newpromises.push(promise.then(function (item) {
           items.push(item);
           return item;
         }));
@@ -261,14 +268,14 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
       // We could use the original 'promises' array here, as these are not
       // asynchronous promises.
-      return Q.all(newpromises);	
-    }, function(err){
+      return Q.all(newpromises);
+    }, function (err) {
       ok(false, "Parsing Failed");
-    }).then(function(result) { 
+    }).then(function (result) { 
        equal(items.length, 10, "10 Instapaper entries  added to array");
-    }).fail(function(err){
+    }).fail(function (err) {
        ok(false, "Fetching Instapaper failed");
-    }).done(function(){ 
+    }).done(function () {
       server.restore();
       start();
     });
@@ -276,18 +283,19 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
     server.respond();
   });
 
-  test("Test InstaPaperFetcher (no stub)", 1,function () {
+  test("Test InstaPaperFetcher (no stub)", 1, function () {
+    var fetcher, promise, items;
     sinon.config.useFakeServer = false;
     stop();
 
-    var fetcher = new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU');
+    fetcher = new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU');
 
-    var promise = fetcher.fetch();
-    var items = [];
-    promise.then(function(promises){
+    promise = fetcher.fetch();
+    items = [];
+    promise.then(function (promises) {
       var newpromises = [];
-      promises.forEach(function(promise) {
-        newpromises.push(promise.then(function(item){
+      promises.forEach(function (promise) {
+        newpromises.push(promise.then(function (item) {
           items.push(item);
           return item;
         }));
@@ -295,22 +303,23 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
       // We could use the original 'promises' array here, as these are not
       // asynchronous promises.
-      return Q.all(newpromises);	
-    }, function(err){
+      return Q.all(newpromises);
+    }, function (err) {
       ok(false, "Parsing Failed");
-    }).then(function(result) { 
+    }).then(function (result) {
        ok(items.length, "Array is not empty");
-    }).fail(function(err){
+    }).fail(function (err) {
        ok(false, "Fetching Instapaer failed");
-    }).done(function(){ 
+    }).done(function () {
       start();
     });
   });
 
 
-  test("Test PicasaFetcher ( with stub )", 2,function () {
+  test("Test PicasaFetcher ( with stub )", 2, function () {
     stop();
-    var server = sinon.fakeServer.create();
+    var server, promise, items;
+    server = sinon.fakeServer.create();
     server.autoRespond = true;
 
     server.respondWith(
@@ -319,7 +328,7 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
       stubs.picasa]
     );
 
-    var fetcher = new Fetchers.PicasaFetcher();
+    fetcher = new Fetchers.PicasaFetcher();
     fetcher.url = '/picasa';
     fetcher.dataType = 'json';
 
