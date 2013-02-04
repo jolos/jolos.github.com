@@ -42,25 +42,14 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.Gist = this.Item.extend({
-        sync: function (method, model, options) {
-          var url =  'https://api.github.com/gists/' + model.get('id');
-          jQuery.ajax({
-            url : url,
-            dataType : 'jsonp',
-            context : this,
-            success : function (json) {
-              try {
-                this.set('files', json.data.files);
-                options.success.call(options.context);
-              } catch (err) {
-                error_log('sync', 'failed parsing Gist: ' + err.get_message());
-              }
-            },
-            error : function (data) {
-              console.log(data);
-              error_log('sync', 'Error while trying to sync blog with ' + url);
-            }
-          });
+        getParams: function () {
+          return {
+            url: 'https://api.github.com/gists/' + this.get('id'),
+            dataType: 'jsonp'
+          };
+        },
+        parse : function (response) {
+          return {'files' : response.data.files};
         }
       });
 
@@ -68,24 +57,14 @@ define('models', ['backbone', 'underscore', 'q'],
         defaults : {
           content : ""
         },
-        sync: function (method, model, options) {
-          var url = './blogs/' + model.get('id');
-          jQuery.ajax({
-            url : url,
-            dataType : 'text',
-            context : this,
-            success : function (data) {
-              try {
-                this.set('content', data);
-                options.success.call(options.context);
-              } catch (err) {
-                error_log('sync', 'failed parsing Blog: ' + err.get_message());
-              }
-            },
-            error : function (data) {
-              error_log('sync', 'Error while trying to sync blog with ' + url);
-            }
-          });
+        getParams: function () {
+          return {
+            url: './blogs/' + this.get('id'),
+            dataType: 'text'
+          };
+        },
+        parse : function (response) {
+          return {'content' : response};
         }
       });
 

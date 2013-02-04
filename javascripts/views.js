@@ -197,6 +197,7 @@ define('views',['backbone', 'underscore','mustache', 'q'],
         },
 
         render : function () {
+          var data, html;
           data =this.preprocess(this.model)
           data.state = this.current_state;
           // use Mustache to render
@@ -315,6 +316,7 @@ define('views',['backbone', 'underscore','mustache', 'q'],
         },
 
         render : function(){
+          var data, html;
           data =this.preprocess(this.model)
           // use Mustache to render
           html = Mustache.render(this.template, data);
@@ -355,6 +357,7 @@ define('views',['backbone', 'underscore','mustache', 'q'],
           },
 
           render : function(){
+            var data, html;
             data =this.preprocess(this.model)
             // use Mustache to render
             html = Mustache.render(this.template, data);
@@ -370,6 +373,30 @@ define('views',['backbone', 'underscore','mustache', 'q'],
             };
           },
        });
+
+      this.ViewFactory = function() {
+      };
+
+      _.extend(this.ViewFactory.prototype,{
+        views : [],
+
+        getView : function(model){
+          var tuple = _.find(this.views, function(tuple){
+            return model instanceof tuple.model;
+          });
+
+          var view = new tuple.view({model: model});
+          return view;
+        },
+
+        register : function(modelobj, viewobj) {
+          var tuple ={'view': viewobj, 'model': modelobj};
+          this.views.push(tuple);
+          if (!$.inArray(tuple,this.views)){
+
+          }
+        },
+      });
     }
     return new module();
   }

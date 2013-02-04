@@ -17,7 +17,7 @@
 	<link rel="stylesheet" href="stylesheets/app.css">
 	<link rel="stylesheet" href="stylesheets/general_foundicons.css">
 	<link rel="stylesheet" href="stylesheets/styles/tomorrow.css">
-	<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
+        <script src="http://requirejs.org/docs/release/2.1.4/minified/require.js"></script>
 	<script src="javascripts/foundation/modernizr.foundation.js"></script>
 	<script type="text/javascript">
 		var _gaq = _gaq || [];
@@ -28,7 +28,32 @@
 			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 		})();
+
+		
 	</script>
+        <script>
+                requirejs.config({
+                    baseUrl: "../javascripts/",
+                    waitSeconds: 15,
+                    shim: {
+                            'underscore' : {
+                                    exports : '_',
+                            },
+                            'mustache' : {
+                                    exports : 'Mustache',
+                            },
+                            'backbone' : {
+                                    deps: ['underscore'],
+                                    exports : 'Backbone', 
+                            }
+                    }
+                });
+
+                require(['main'], function (App) {
+                  var rtr = new App.Router;
+                });
+                //require(['fetchers','stub_responses','q','models','views'], run_tests);
+        </script>
 
 	<!-- IE Fix for HTML5 Tags -->
 	<!--[if lt IE 9]>
@@ -127,12 +152,6 @@
 
 
 	<script src="javascripts/foundation/jquery.js"></script>
-
-	<script src="javascripts/underscore.js"></script>
-
-	<script src="javascripts/backbone.js"></script>
-
-	<script src="javascripts/main.js"></script>
 
 	<script src="javascripts/marked.js"></script>
 	<script src="javascripts/jquery.colorbox-min.js"></script>
