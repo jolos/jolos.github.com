@@ -108,53 +108,54 @@ define('views',['backbone', 'underscore','mustache', 'q'],
                 .then(function () {
                   that.render();
                   that.$('.placeholder').hide();
-                  var defferedpromise = Q.defer();
+                  var deffered = Q.defer();
                   that.$('.body').slideDown(500, function () {
                     that.$('.meta').slideDown(500);
                     // TODO: pass smth sensible as the resolve argument.
-                    defferedpromise.resolve(that);
+                    deffered.resolve(that);
                   });
-                  return defferedpromise;
+                  return deffered.promise;
                 });
               return promise;
             });
 
             this.setTransition('closed', 'open', function () {
-              var defferedpromise = Q.defer();
+              var deffered = Q.defer();
               var that = this;
               this.$('.placeholder').animate({width: 0}, 500, 'linear', function () {
                 that.$('.body').slideDown(500, function () {
                   that.$('.meta').slideDown(200);
-                  defferedpromise.resolve(that);
+                  deffered.resolve(that);
                 });
               });
-              return defferedpromise;
+              return deffered.promise;
             });
 
             this.setTransition('open', 'closed', function () {
-              var that, defferedpromise;
+              var that, deffered;
               that = this;
-              defferedpromise = Q.defer();
+              deffered = Q.defer();
 
               that.$('.meta').slideUp(200, function () {
                 that.$('.body').slideUp(500, function () {
                   that.$('.placeholder').show();
                   that.$('.placeholder').animate({width: '25%'}, 500, 'linear', function () {
-                    defferedpromise.resolve(that);
+                    deffered.resolve(that);
                   });
                 });
               });
-              return defferedpromise;
+              return deffered.promise;
             });
 
             this.setTransition('*', 'end', function () {
-              var that, defferedpromise;
+              var that, deffered;
               that = this;
-              defferedpromise = Q.defer();
+              deffered = Q.defer();
               this.$el.slideUp(500, 'linear', function () {
-                defferedpromise.resolve(that);
+                deffered.resolve(that);
                 $(this).remove();
               });
+              return deffered.promise;
             });
 
             this.model.bind('destroy', this.close, this);

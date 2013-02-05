@@ -4,9 +4,9 @@ define('main', ['backbone', 'underscore', 'q'],
             console.log(msg); 
             _gaq.push(['_trackEvent', 'error', type, msg]);
       };
-
       var module = function () {
         var App = this;
+        var origin = new Date();
       App.Router = Backbone.Router.extend({
 
         routes: {
@@ -36,19 +36,19 @@ define('main', ['backbone', 'underscore', 'q'],
 
           var that = this;
 
+          // TODO: provide fetchers as an argument of main.
           require(['fetchers'], function (Fetchers) {
-            // TODO: load fetchers
             //that.items.fetchers.push(new TestFetcher('json', './blogs.json'));
             that.fetchers.push(new Fetchers.GistFetcher('jolos'));
             that.fetchers.push(new Fetchers.PicasaFetcher("103884336232903331378"));
-            that.fetchers.push(new Fetchers.BlogFetcher('./blogs.json'));
+            that.fetchers.push(new Fetchers.BlogFetcher('json', './blogs.json'));
             that.fetchers.push(new Fetchers.PageFetcher('jolos', 'jolos.github.com','pages'));
             that.fetchers.push(new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
             Backbone.history.start();
           });
         },
 
-        fetch: function (filter) {
+        fetch: function () {
           var promises = [];
           var itemlist = this.appview.items;
           var additem = function (item) {
@@ -56,12 +56,15 @@ define('main', ['backbone', 'underscore', 'q'],
             return item;
           };
           _.each(this.fetchers, function (fetcher) {
-            var promise = fetcher.fetch(filter);
-            promise.then(function (promiselist) {
-              _.each(promiselist, function (promise) {
-                promises.push(promise.then(additem));
+            if (!fetcher.fetched) {
+              var promise = fetcher.fetch();
+              fetcher.fetched = true;
+              promise.then(function (promiselist) {
+                _.each(promiselist, function (promise) {
+                  promises.push(promise.then(additem));
+                });
               });
-            });
+            }
           });
           // TODO: return a Q.all promise.
         },
@@ -94,14 +97,14 @@ define('main', ['backbone', 'underscore', 'q'],
             
             var filter;
             if( filters.length > 1 ) {
-              var filter = new App.AndFilter(filters);
+              filter = new App.AndFilter(filters);
             } else if(filters.length == 1) {
-              var filter = filters[0];
+              filter = filters[0];
             } else {
-              var filter = new App.TrueFilter();
+             filter = new App.TrueFilter();
             }
             
-            filter = new App.TrueFilter();
+            //filter = new App.TrueFilter();
 
             this.appview.items.filter = filter;
 
@@ -297,18 +300,7 @@ define('main', ['backbone', 'underscore', 'q'],
 
     App.TypeFilter = function(query) {
       this.filter = function(item){
-        switch(query){
-          case 'blog': 
-            return item instanceof BlogItem;
-          case 'gist': 
-            return item instanceof Gist;
-          case 'album': 
-            return item instanceof Album;
-          case 'page': 
-            return item instanceof Page;
-          case 'instapaper': 
-            return item instanceof InstaPaper;
-        }
+        return (item.get('type') == query);
       };
 
       this.tostr = function() {
@@ -355,11 +347,11 @@ define('main', ['backbone', 'underscore', 'q'],
       }
     },
 
-    clean : function(){
+    clean : function () {
       var that = this;
       var notfilter = new App.NotFilter(this.filter);
       var dirty_items = this.filteredItems.filter(notfilter.filter);
-      _.map(dirty_items, function(item){
+      _.map(dirty_items, function (item) {
         item.destroy();
       });
       this.percolateAll();

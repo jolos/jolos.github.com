@@ -42,6 +42,9 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.Gist = this.Item.extend({
+        defaults: {
+          type: 'gist'
+        },
         getParams: function () {
           return {
             url: 'https://api.github.com/gists/' + this.get('id'),
@@ -55,7 +58,8 @@ define('models', ['backbone', 'underscore', 'q'],
 
       this.BlogItem = this.Item.extend({
         defaults : {
-          content : ""
+          content : "",
+          type: 'blog'
         },
         getParams: function () {
           return {
@@ -69,11 +73,14 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.InstaPaper = this.Item.extend({
-        // Empty :-)
+        defaults: {
+          type: 'instapaper'
+        }
       });
 
       this.Page = this.Item.extend({
         defaults : {
+          type: 'page',
           content : ""
         },
         getParams: function () {
@@ -88,6 +95,9 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.Album = this.Item.extend({
+        defaults: {
+          type: 'album'
+        },
         getParams: function () {
           return {
             url: 'https://picasaweb.google.com/data/feed/api/user/' + "103884336232903331378" + '/albumid/' + this.get('id') + '?alt=json&imgmax=800',

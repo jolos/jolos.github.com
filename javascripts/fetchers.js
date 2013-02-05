@@ -9,41 +9,43 @@ define('fetchers', ['q', 'underscore', 'models'],
         {
           // Parse should always return a promise.
           // You almost always want to override this.
-          parse : function(data) {
+          parse : function (data) {
             return Q.fulfill(data);
           },
           // You probably want to override the parameters.
-          getParams : function(){
+          getParams : function () {
             return {
               url : this.url,
               dataType : this.dataType,
             };
           },
           // By default we're using jQuery for ajax calls.
-          request : function(params) {
+          request : function (params) {
             return jQuery.ajax(params);
           },
           // Fetch should always return an array of promises.
           // You probably don't want to override this.
-          fetch : function() {
+          fetch : function () {
             var that = this;
             return Q.when(this.request(this.getParams()))
-            .then(function(json){
+            .then(function (json){
               return that.parse(json);
             });
           },
       });
 
-      this.BlogFetcher = function(dataType,url){
+      this.BlogFetcher = function (dataType,url) {
+        this.type = 'blog';
         this.url = url;
         this.dataType = dataType;
+        this.fetched = false;
       }
 
       _.extend(
           this.BlogFetcher.prototype, 
           this.AbstractFetcher.prototype,
           {
-           parse : function(data) {
+           parse : function (data) {
              var items = [];
              _.each(data, function(item) {
                var created_date = new Date(item.created);
@@ -70,9 +72,10 @@ define('fetchers', ['q', 'underscore', 'models'],
 
 
      this.GistFetcher = function(username) {
-         this.url = 'https://api.github.com/users/' + username +'/gists'; 
-         this.dataType = "jsonp";
-         this.fetched = false;
+        this.type = 'gist';
+        this.url = 'https://api.github.com/users/' + username +'/gists'; 
+        this.dataType = "jsonp";
+        this.fetched = false;
       };
 
       _.extend(
@@ -108,9 +111,10 @@ define('fetchers', ['q', 'underscore', 'models'],
      });
 
      this.InstaPaperFetcher = function(feedurl) {
-         this.url = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent('select * from xml where url="' + feedurl + '"') + '&format=json';
-         this.fetched = false;
-         this.dataType = 'jsonp';
+        this.type = 'instapaper';
+        this.url = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent('select * from xml where url="' + feedurl + '"') + '&format=json';
+        this.fetched = false;
+        this.dataType = 'jsonp';
       };
 
       _.extend(
@@ -138,9 +142,10 @@ define('fetchers', ['q', 'underscore', 'models'],
       });
 
       this.PageFetcher = function(user,repo,folder) {
-         this.url = 'https://api.github.com/repos/'+user+'/'+repo+'/contents/'+folder;
-         this.fetched = false;
-         this.dataType = 'jsonp';
+        this.type = 'page';
+        this.url = 'https://api.github.com/repos/'+user+'/'+repo+'/contents/'+folder;
+        this.fetched = false;
+        this.dataType = 'jsonp';
       };
 
       _.extend(this.PageFetcher.prototype, 
@@ -179,6 +184,7 @@ define('fetchers', ['q', 'underscore', 'models'],
       );
 
       this.PicasaFetcher = function(uid) {
+        this.type = 'album';
          this.url = 'https://picasaweb.google.com/data/feed/api/user/' + uid + '?alt=json';
          this.fetched = false;
          this.dataType = 'jsonp';
