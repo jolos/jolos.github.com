@@ -35,7 +35,6 @@ define('fetchers', ['q', 'underscore', 'models'],
       });
 
       this.BlogFetcher = function (dataType,url) {
-        this.type = 'blog';
         this.url = url;
         this.dataType = dataType;
         this.fetched = false;
@@ -45,6 +44,9 @@ define('fetchers', ['q', 'underscore', 'models'],
           this.BlogFetcher.prototype, 
           this.AbstractFetcher.prototype,
           {
+           getType : function () {
+             return 'blog';
+           },
            parse : function (data) {
              var items = [];
              _.each(data, function(item) {
@@ -82,6 +84,9 @@ define('fetchers', ['q', 'underscore', 'models'],
           this.GistFetcher.prototype, 
           this.AbstractFetcher.prototype,
           {
+           getType : function () {
+             return 'gist';
+           },
            parse : function(data) {
                var that = this;
                var promises = [];
@@ -121,6 +126,9 @@ define('fetchers', ['q', 'underscore', 'models'],
           this.InstaPaperFetcher.prototype, 
           this.AbstractFetcher.prototype,
           {
+           getType : function () {
+             return 'instapaper';
+           },
            parse : function(data) {
                  var that = this;
                  var promises = [];
@@ -151,6 +159,9 @@ define('fetchers', ['q', 'underscore', 'models'],
       _.extend(this.PageFetcher.prototype, 
           this.AbstractFetcher.prototype,
           {
+           getType : function () {
+             return 'page';
+           },
             getParams : function() {
               return {
                 dataType : 'jsonp',
@@ -193,6 +204,9 @@ define('fetchers', ['q', 'underscore', 'models'],
       _.extend(this.PicasaFetcher.prototype, 
           this.AbstractFetcher.prototype,
           {
+           getType : function () {
+             return 'album';
+           },
            parse : function(data) {
              var that = this;
              var promises = [];

@@ -9,6 +9,9 @@ define('models', ['backbone', 'underscore', 'q'],
        * TODO: could be a mixin.
        */
       this.Item = Backbone.Model.extend({
+        getType: function () {
+          return 'item';
+        },
         // Default parse method
         parse: function (response) {
           return response;
@@ -42,8 +45,8 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.Gist = this.Item.extend({
-        defaults: {
-          type: 'gist'
+        getType: function () {
+          return 'gist';
         },
         getParams: function () {
           return {
@@ -57,9 +60,11 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.BlogItem = this.Item.extend({
+        getType: function () {
+          return 'blog';
+        },
         defaults : {
-          content : "",
-          type: 'blog'
+          content : ""
         },
         getParams: function () {
           return {
@@ -73,14 +78,16 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.InstaPaper = this.Item.extend({
-        defaults: {
-          type: 'instapaper'
+        getType: function () {
+          return 'instapaper';
         }
       });
 
       this.Page = this.Item.extend({
+        getType: function () {
+          return 'page';
+        },
         defaults : {
-          type: 'page',
           content : ""
         },
         getParams: function () {
@@ -95,14 +102,14 @@ define('models', ['backbone', 'underscore', 'q'],
       });
 
       this.Album = this.Item.extend({
-        defaults: {
-          type: 'album'
+        getType: function () {
+          return 'album';
         },
         getParams: function () {
           return {
             url: 'https://picasaweb.google.com/data/feed/api/user/' + "103884336232903331378" + '/albumid/' + this.get('id') + '?alt=json&imgmax=800',
             dataType: 'jsonp'
-          }
+          };
         },
         parse: function (data) {
           var photos, that, files;

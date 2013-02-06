@@ -1,16 +1,19 @@
+/*jslint indent: 2, browser: true */
+/*global define, jQuery, require,$*/
 define('main', ['backbone', 'underscore', 'q'],
   function (Backbone, _, Q) {
-      window.error_log = function(type, msg) {
-            console.log(msg); 
-            _gaq.push(['_trackEvent', 'error', type, msg]);
-      };
-      var module = function () {
-        var App = this;
-        var origin = new Date();
+    'use strict';
+    window.error_log = function (type, msg) {
+      console.log(msg); 
+      _gaq.push(['_trackEvent', 'error', type, msg]);
+    };
+
+    var module = function () {
+      var App = this;
       App.Router = Backbone.Router.extend({
 
         routes: {
-          "*actions" : "default",
+          "*actions" : "default"
         },
       
         aliases : {
@@ -19,19 +22,19 @@ define('main', ['backbone', 'underscore', 'q'],
           'albums' : 'type/album/title/!plakboek&!profiel',
           'instapaper' : 'type/instapaper',
           'blogs' : 'type/blog',
-          'about/me' : 'type/page/path/about.me',
+          'about/me' : 'type/page/path/about.me'
         },
 
-        initialize : function(){
+        initialize : function () {
           this.appview = new App.ItemListView;
-          this.bind('route:default', function(route){
-            window.document.title = " シ "+ route;
+          this.bind('route:default', function (route) {
+            window.document.title = " シ " + route;
           });
-          this.bind('route:default', function(route){
-              _gaq.push(['_trackPageview', "/#"+ route])
+          this.bind('route:default', function (route) {
+              _gaq.push(['_trackPageview', "/#" + route]);
           });
-          this.bind('route:default',this.appview.items.clean,this.appview.items);
-          this.bind('route:default',draw);
+          this.bind('route:default', this.appview.items.clean, this.appview.items);
+          //this.bind('route:default', draw);
           this.fetchers = [];
 
           var that = this;
@@ -42,26 +45,27 @@ define('main', ['backbone', 'underscore', 'q'],
             that.fetchers.push(new Fetchers.GistFetcher('jolos'));
             that.fetchers.push(new Fetchers.PicasaFetcher("103884336232903331378"));
             that.fetchers.push(new Fetchers.BlogFetcher('json', './blogs.json'));
-            that.fetchers.push(new Fetchers.PageFetcher('jolos', 'jolos.github.com','pages'));
+            that.fetchers.push(new Fetchers.PageFetcher('jolos', 'jolos.github.com', 'pages'));
             that.fetchers.push(new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
             Backbone.history.start();
           });
         },
 
-        fetch: function () {
-          var promises = [];
-          var itemlist = this.appview.items;
-          var additem = function (item) {
-            itemlist.add(item);
-            return item;
-          };
-          _.each(this.fetchers, function (fetcher) {
+        fetch: function (typefilter) {
+          var promises, itemlist, additem;
+          promises = [];
+          itemlist = this.appview.items;
+
+          _.each(_.filter(this.fetchers, typefilter.filter), function (fetcher) {
             if (!fetcher.fetched) {
               var promise = fetcher.fetch();
               fetcher.fetched = true;
               promise.then(function (promiselist) {
                 _.each(promiselist, function (promise) {
-                  promises.push(promise.then(additem));
+                  promises.push(promise.then(function (item) {
+                    itemlist.add(item);
+                    return item;
+                  }));
                 });
               });
             }
@@ -69,208 +73,219 @@ define('main', ['backbone', 'underscore', 'q'],
           // TODO: return a Q.all promise.
         },
 
-        default : function(actions){
-          var alias = this.aliases[actions];
+        default : function (actions) {
+          var alias, path, filters, typefilters, filter, typefilter;
+          alias = this.aliases[actions];
+          
 
           if (alias) {
-            var path = _.filter(alias.split("/"),function(str){ return str });
+            path = _.filter(alias.split("/"), function (str) { return str });
           } else {
-            var path = _.filter(actions.split("/"),function(str){ return str });
+            path = _.filter(actions.split("/"), function (str) { return str });
           }
           // This function connects all the parts
 
           try {
-            var filters = [];
+            filters = [];
+            typefilters = [];
 
-            var typefilters = []
-
-            while (path.length !=0) {
+            while (path.length != 0) {
               var name = path.shift();
-              var parser = new App.FilterParser(name);
-              var query =path.shift();
-              var filter = parser.parse(query);
-              if (name == 'type'){
-               typefilters.push(filter); 
-              } 
-              filters.push(filter); 
+              var query = path.shift();
+              (function (name, query) {
+                //var name = path.shift();
+                var parser, filter;
+                parser = new App.FilterParser(name);
+                filter = parser.parse(query);
+                if (name === 'type') {
+                  typefilters.push(filter);
+                }
+                filters.push(filter);
+              })(name, query);
             }
             
-            var filter;
-            if( filters.length > 1 ) {
+            if (filters.length > 1) {
               filter = new App.AndFilter(filters);
-            } else if(filters.length == 1) {
+            } else if (filters.length == 1) {
               filter = filters[0];
             } else {
-             filter = new App.TrueFilter();
+              filter = new App.TrueFilter();
             }
             
             //filter = new App.TrueFilter();
 
             this.appview.items.filter = filter;
 
-            this.fetch(filter);
-            /* 
-            if( typefilters.length > 1 ) {
+            if (typefilters.length > 1) {
               //this.appview.items.fetch(new AndFilter(typefilters));
-              this.fetch(new AndFilter(typefilters));
-            } else if(typefilters.length == 1) {
+              typefilter = new App.AndFilter(typefilters);
+            } else if (typefilters.length == 1) {
               //this.appview.items.fetch(typefilters[0]);
-              this.fetch(typefilters[0]);
+              typefilter = typefilters[0];
             } else {
-              this.fetch(new TrueFilter());
-            }*/
-          } catch(err) {
+              typefilter = new App.TrueFilter();
+            }
+
+            this.fetch(typefilter);
+          } catch (err) {
             error_log('general', err.message);
           }
-        },
+        }
       });
 
-      App.FilterParser = function(name) {
+      App.FilterParser = function (name) {
 
-        this.parse = function(query) {
+        this.parse = function (query) {
           var filter = this.parseAnd(query);
-          if(filter) {
+          if (filter) {
             return filter;
           }
 
           filter = this.parseOr(query);
 
-          if(filter) {
+          if (filter) {
             return filter;
           }
 
           filter = this.parseNot(query);
           
-          if(filter) {
+          if (filter) {
             return filter;
           }
 
-          filter = this.parseDefault(query); 
+          filter = this.parseDefault(query);
           return filter;
         };
           
-        this.parseParentheses = function(query) {
-          var pos1 = query.indexOf("(");
-          var pos2 = query.indexOf(")");
+        this.parseParentheses = function (query) {
+          var pos1, pos2;
+          pos1 = query.indexOf("(");
+          pos2 = query.indexOf(")");
           if ( pos1 == -1  && pos2 != -1){
             throw "invalid query";
           } else if (pos1 != -1) {
-            return filter = this.parse(query.substring(pos1,pos2));
-          } 
+            return this.parse(query.substring(pos1, pos2));
+          }
 
           return false;
         };
 
-        this.parseAnd = function(query) {
-          if(query.indexOf('&') != -1){
+        this.parseAnd = function (query) {
+          if (query.indexOf('&') != -1) {
             var subqueries = query.split('&');
-            return new App.AndFilter(_.map(subqueries,this.parse,this));
+            return new App.AndFilter(_.map(subqueries, this.parse, this));
           }
           return false;
         };
 
-        this.parseOr = function(query) {
-          if(query.indexOf('|') != -1){
+        this.parseOr = function (query) {
+          if (query.indexOf('|') != -1) {
             var subqueries = query.split('|');
-            return new App.OrFilter(_.map(subqueries,this.parse,this));
+            return new App.OrFilter(_.map(subqueries, this.parse, this));
           }
           return false;
         };
 
-        this.parseNot = function(query) {
-          if(query.indexOf('!') != -1){
+        this.parseNot = function (query) {
+          if (query.indexOf('!') != -1) {
             var subquery = query.substring(1);
             return new App.NotFilter(this.parse(subquery));
           }
           return false;
         };
 
-        this.parseDefault = function(query) {
-          if (name == 'type'){
+        this.parseDefault = function (query) {
+          if (name == 'type') {
             return new App.TypeFilter(query);
           }
-          return new App.PropertyRegexFilter(name,query);
+          return new App.PropertyRegexFilter(name, query);
         };
       };
 
-      App.FilterFactory = function(defaultFilter) {
+      App.FilterFactory = function (defaultFilter) {
         this.default = defaultFilter;
       };
 
-      _.extend(App.FilterFactory.prototype,{
-          filters : [],
+      _.extend(App.FilterFactory.prototype, {
+        filters : [],
 
-          getFilterInstance : function(name, arg){
-            var tuple = _.find(this.filters, function(tuple){
-              return name == tuple.name;
-            });
+        getFilterInstance : function (name, arg) {
+          var filter;
+          var tuple = _.find(this.filters, function (tuple) {
+            return name == tuple.name;
+          });
 
-            if (tuple) {
-              var filter = new tuple.filter(arg);
-            } else {
-              // return default filter
-              var filter = new defaultFilter(arg);
-            }
+          if (tuple) {
+            filter = new tuple.filter(arg);
+          } else {
+            // return default filter
+            filter = new defaultFilter(arg);
+          }
 
-            return filter;
-          },
+          return filter;
+        },
 
-          register : function(name, filterobj) {
-            var tuple ={'name': name, 'filter': filterobj};
-            this.filter.push(tuple);
-          },
+        register : function (name, filterobj) {
+          var tuple = {
+            'name': name, 
+            'filter': filterobj
+          };
+
+          this.filter.push(tuple);
+        }
       });
 
-      App.OrFilter = function(filters) {
-        if(filters.length < 2) {
-            throw "OR filter needs at least two filters"
-        }
+    App.OrFilter = function (filters) {
+      if(filters.length < 2) {
+          throw "OR filter needs at least two filters";
+      }
 
-        this.filter = function(item) {
-          for (var i = 0; i < filters.length; i++){
-            var filter = filters[i];
-            if (filter.filter(item)) {
-               return true;
-            }
+      this.filter = function (item) {
+        var filter;
+        for (var i = 0; i < filters.length; i++){
+          filter = filters[i];
+          if (filter.filter(item)) {
+             return true;
           }
-          return false;
-        };
-
-        this.tostr = function() {
-          return _.reduce(filters, function(memo,filter,idx){ 
-            if(idx == 0) return filter.tostr();
-            return memo + ' OR ' + filter.tostr();
-          },'');
-        };
+        }
+        return false;
       };
 
-      App.TrueFilter = function() {
-        this.filter = function(item){
-          return true;
-        };
+      this.tostr = function () {
+        return _.reduce(filters, function (memo,filter,idx) { 
+          if (idx == 0) return filter.tostr();
+          return memo + ' OR ' + filter.tostr();
+        },'');
+      };
+    };
 
-        this.tostr = function(){
-          return "TRUE";
-        };
+    App.TrueFilter = function () {
+      this.filter = function (item) {
+        return true;
       };
 
-      App.NotFilter = function(filter) {
-        this.filter = function(item) {
-          return !filter.filter(item);
-        };
+      this.tostr = function () {
+        return "TRUE";
+      };
+    };
 
-        this.tostr = function() {
-          return "NOT " + filter.tostr();
-        };
+    App.NotFilter = function (filter) {
+      this.filter = function (item) {
+        return !filter.filter(item);
       };
 
-      this.AndFilter = function(filters) {
+      this.tostr = function () {
+        return "NOT " + filter.tostr();
+      };
+    };
+
+    App.AndFilter = function (filters) {
       if(filters.length < 2) {
           throw "AND filter needs at least two filters"
       }
 
-      this.filter = function(item) {
-        for (var i = 0; i < filters.length; i++){
+      this.filter = function (item) {
+        for (var i = 0; i < filters.length; i++) {
           var filter = filters[i];
           if (!filter.filter(item)) {
              return false;
@@ -279,32 +294,33 @@ define('main', ['backbone', 'underscore', 'q'],
         return true;
       };
 
-      this.tostr = function() {
-        return _.reduce(filters, function(memo,filter,idx){ 
+      this.tostr = function () {
+        return _.reduce(filters, function (memo,filter,idx) { 
           if(idx == 0) return filter.tostr();
           return memo + ' AND ' + filter.tostr();
         },'');
       };
     };
 
-    App.PropertyRegexFilter = function(name,regex) {
+    App.PropertyRegexFilter = function (name,regex) {
       this.pattern = new RegExp(regex,'i');
-      this.filter = function(item) {
+
+      this.filter = function (item) {
         return this.pattern.test(item.get(name));
       };
 
-      this.tostr = function() {
+      this.tostr = function () {
         return name + ' == ' + regex;
       };
     };
 
-    App.TypeFilter = function(query) {
-      this.filter = function(item){
-        return (item.get('type') == query);
+    App.TypeFilter = function (query) {
+      this.filter = function (item) {
+        return (item.getType() == query);
       };
 
-      this.tostr = function() {
-        switch(query){
+      this.tostr = function () {
+        switch (query) {
           case 'blog': 
             return "item is blog";
           case 'gist': 
@@ -320,28 +336,27 @@ define('main', ['backbone', 'underscore', 'q'],
     }
 
    App.ItemList = Backbone.Collection.extend({
-
     fetchers : [],
 
-    initialize : function() {
+    initialize : function () {
       this.bind('add',this.percolate);
       this.filteredItems = new App.FilteredItemList;
     },
     
-    fetch : function(type_filter) {
+    fetch : function (type_filter) {
       var that = this;
-      _.each(this.fetchers,function(fetcher, i) {
-        fetcher.fetch(type_filter,function(item){
+      _.each(this.fetchers, function (fetcher, i) {
+        fetcher.fetch(type_filter, function(item) {
           this.add(item);
         }, that);
       });
     },
 
-    percolateAll : function() {
-      this.each(this.percolate,this);
+    percolateAll : function () {
+      this.each(this.percolate, this);
     },
 
-    percolate : function(item) {
+    percolate : function (item) {
       if(this.filter.filter(item)){
         this.filteredItems.add(item.clone());
       }
@@ -356,58 +371,56 @@ define('main', ['backbone', 'underscore', 'q'],
       });
       this.percolateAll();
     }
-  });
+   });
 
-  App.FilteredItemList = Backbone.Collection.extend({
-
-    comparator : function(item) {
-      var created = item.get('created');
-      if(created){
-        // use ints for fast comparison
-        var nmbr = created.day + created.month * 100 + created.year*10000;
-        return -nmbr;
+   App.FilteredItemList = Backbone.Collection.extend({
+      comparator : function (item) {
+        var created = item.get('created');
+        if (created) {
+          // use ints for fast comparison
+          var nmbr = created.day + created.month * 100 + created.year*10000;
+          return -nmbr;
+        }
+        return 0;
       }
-      return 0;
-    },
-  });
-
+    });
 
     App.ItemListView = Backbone.View.extend({
-        el : $('#main'),
+      el : $('#main'),
 
-        initialize : function() {
-          this.items = new App.ItemList;
+      initialize : function () {
+        this.items = new App.ItemList;
 
-          var that = this;
-          require(['views', 'models'], function (Views, Models) {
-            that.factory = new Views.ViewFactory;
-            that.factory.register(Models.Gist, Views.GistView);
-            that.factory.register(Models.Album, Views.AlbumView);
-            that.factory.register(Models.BlogItem, Views.BlogView);
-            that.factory.register(Models.Page, Views.PageView);
-            that.factory.register(Models.InstaPaper, Views.InstaPaperView);
-            that.items.filteredItems.bind('add', that.addItem, that);
-            // render the items.
-            that.items.filteredItems.each(that.addItem, that);
-          });
-          // filtertlist. and start percolating.
-        },
+        var that = this;
+        require(['views', 'models'], function (Views, Models) {
+          that.factory = new Views.ViewFactory;
+          that.factory.register(Models.Gist, Views.GistView);
+          that.factory.register(Models.Album, Views.AlbumView);
+          that.factory.register(Models.BlogItem, Views.BlogView);
+          that.factory.register(Models.Page, Views.PageView);
+          that.factory.register(Models.InstaPaper, Views.InstaPaperView);
+          that.items.filteredItems.bind('add', that.addItem, that);
+          // render the items.
+          that.items.filteredItems.each(that.addItem, that);
+        });
+        // filtertlist. and start percolating.
+      },
 
-        addItem : function(item) {
-          var view = this.factory.getView(item);
-          var html = view.render().el;
-          var idx = this.items.filteredItems.indexOf(item);
-          var children = $(this.el).children();
-          $(view.el).hide();
-          if(children.length == 0 || idx == children.length){
-            $(this.el).append(html);
-          } else {
-            $(children[idx]).before(html);
-          }
-          $(view.el).slideDown(500);
-        },
-      });
-
-      };
-      return new module();
-  });
+      addItem : function (item) {
+        var view, html, idx, children;
+        view = this.factory.getView(item);
+        html = view.render().el;
+        idx = this.items.filteredItems.indexOf(item);
+        children = $(this.el).children();
+        $(view.el).hide();
+        if(children.length == 0 || idx == children.length){
+          $(this.el).append(html);
+        } else {
+          $(children[idx]).before(html);
+        }
+        $(view.el).slideDown(500);
+      }
+    });
+  };
+  return new module();
+});
