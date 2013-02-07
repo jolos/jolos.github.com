@@ -26,22 +26,21 @@ define('main', ['backbone', 'underscore', 'q'],
         },
 
         initialize : function () {
-          this.appview = new App.ItemListView;
           this.bind('route:default', function (route) {
             window.document.title = " シ " + route;
           });
           this.bind('route:default', function (route) {
               _gaq.push(['_trackPageview', "/#" + route]);
           });
-          this.bind('route:default', this.appview.items.clean, this.appview.items);
           //this.bind('route:default', draw);
           this.fetchers = [];
+
+          this.items = new App.ItemList;
 
           var that = this;
 
           // TODO: provide fetchers as an argument of main.
           require(['fetchers'], function (Fetchers) {
-            //that.items.fetchers.push(new TestFetcher('json', './blogs.json'));
             that.fetchers.push(new Fetchers.GistFetcher('jolos'));
             that.fetchers.push(new Fetchers.PicasaFetcher("103884336232903331378"));
             that.fetchers.push(new Fetchers.BlogFetcher('json', './blogs.json'));
@@ -49,12 +48,28 @@ define('main', ['backbone', 'underscore', 'q'],
             that.fetchers.push(new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
             Backbone.history.start();
           });
+
+          require(['views', 'models'], function (Views, Models) {
+            var factory = new Views.ViewFactory;
+            factory.register(Models.Gist, Views.GistView);
+            factory.register(Models.Album, Views.AlbumView);
+            factory.register(Models.BlogItem, Views.BlogView);
+            factory.register(Models.Page, Views.PageView);
+            factory.register(Models.InstaPaper, Views.InstaPaperView);
+            // Get an instance of the main view, inject the dependencies.
+            that.appview = new Views.ItemListView({items: that.items, factory: factory});
+            that.bind('route:default', that.items.clean, that.items);
+            that.items.filteredItems.bind('add', that.appview.addItem, that.appview);
+            // render the items.
+            that.items.filteredItems.each(that.appview.addItem, that.appview);
+
+          });
         },
 
         fetch: function (typefilter) {
           var promises, itemlist, additem;
           promises = [];
-          itemlist = this.appview.items;
+          itemlist = this.items;
 
           _.each(_.filter(this.fetchers, typefilter.filter), function (fetcher) {
             if (!fetcher.fetched) {
@@ -114,7 +129,7 @@ define('main', ['backbone', 'underscore', 'q'],
             
             //filter = new App.TrueFilter();
 
-            this.appview.items.filter = filter;
+            this.items.filter = filter;
 
             if (typefilters.length > 1) {
               //this.appview.items.fetch(new AndFilter(typefilters));
@@ -383,44 +398,7 @@ define('main', ['backbone', 'underscore', 'q'],
         }
         return 0;
       }
-    });
-
-    App.ItemListView = Backbone.View.extend({
-      el : $('#main'),
-
-      initialize : function () {
-        this.items = new App.ItemList;
-
-        var that = this;
-        require(['views', 'models'], function (Views, Models) {
-          that.factory = new Views.ViewFactory;
-          that.factory.register(Models.Gist, Views.GistView);
-          that.factory.register(Models.Album, Views.AlbumView);
-          that.factory.register(Models.BlogItem, Views.BlogView);
-          that.factory.register(Models.Page, Views.PageView);
-          that.factory.register(Models.InstaPaper, Views.InstaPaperView);
-          that.items.filteredItems.bind('add', that.addItem, that);
-          // render the items.
-          that.items.filteredItems.each(that.addItem, that);
-        });
-        // filtertlist. and start percolating.
-      },
-
-      addItem : function (item) {
-        var view, html, idx, children;
-        view = this.factory.getView(item);
-        html = view.render().el;
-        idx = this.items.filteredItems.indexOf(item);
-        children = $(this.el).children();
-        $(view.el).hide();
-        if(children.length == 0 || idx == children.length){
-          $(this.el).append(html);
-        } else {
-          $(children[idx]).before(html);
-        }
-        $(view.el).slideDown(500);
-      }
-    });
+   });
   };
   return new module();
 });

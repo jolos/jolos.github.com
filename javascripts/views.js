@@ -4,34 +4,22 @@ define('views',['backbone', 'underscore','mustache', 'q'],
   function (Backbone, _, Mustache, Q) {
     'use strict';
     var module = function () {
-      // TODO: StateView could be a mixin instead of a full blown object.
-      this.StateView = function (options) {
-        Backbone.View.apply(this, [options]);
-      };
-
-      _.extend(
-        this.StateView.prototype,
-        Backbone.View.prototype,
-        {
-          tagName : 'div',
-          states : ['start'],
-          current_state : 'start',
-          transitions : {
-            '*' : {}
-          },
-          getCurrentState : function () {
+      this.StateViewMixin = (function () {
+         function getCurrentState() {
             return this.current_state;
-          },
+          };
+
           // callback should always return a promise.
-          setTransition : function (start_state, end_state, callback) {
+          function setTransition(start_state, end_state, callback) {
             if (($.inArray(start_state, this.states) !== -1 || start_state === '*') && $.inArray(end_state, this.states) !== -1) {
               if (!this.transitions[start_state]) {
                 this.transitions[start_state] = {};
               }
               this.transitions[start_state][end_state] = callback;
             }
-          },
-          doTransition: function (next_state) {
+          };
+
+          function doTransition(next_state) {
             var transitions, that, successcallback, promise;
             transitions = this.transitions[this.current_state];
 
@@ -54,8 +42,9 @@ define('views',['backbone', 'underscore','mustache', 'q'],
             }
             
             return promise;
-          },
-          render : function () {
+          };
+
+          function render() {
             var html, data;
             data = this.preprocess(this.model);
             data.state = this.current_state;
@@ -70,10 +59,30 @@ define('views',['backbone', 'underscore','mustache', 'q'],
             // return an instance of the view
             return this;
           }
-        }
-      );
 
-      this.StateView.extend = Backbone.View.extend;
+          return function () {
+            this.tagName = 'div';
+            this.states = ['start'];
+            this.current_state = 'start';
+            this.transitions = {
+              '*' : {}
+            };
+            this.render = render;
+            this.doTransition = doTransition;
+            this.setTransition = setTransition;
+            this.getCurrentState = getCurrentState;
+            this.extend = Backbone.View.extend;
+          };
+      })();
+
+      // TODO: StateView is deprecated.
+      this.StateView = function (options) {
+        Backbone.View.apply(this, [options]);
+      };
+
+      _.extend(this.StateView.prototype, Backbone.View.prototype);
+
+      this.StateViewMixin.call(this.StateView.prototype);
       
       this.ArticleView = function (options) {
         Backbone.View.apply(this, [options]);
@@ -398,6 +407,32 @@ define('views',['backbone', 'underscore','mustache', 'q'],
           }
         },
       });
+
+      this.ItemListView = Backbone.View.extend({
+        el : $('#main'),
+
+        constructor : function (attributes, options) {
+          this.items = attributes.items;
+          this.factory = attributes.factory;
+          Backbone.View.apply(this, arguments);
+        },
+
+        addItem : function (item) {
+          var view, html, idx, children;
+          view = this.factory.getView(item);
+          html = view.render().el;
+          idx = this.items.filteredItems.indexOf(item);
+          children = $(this.el).children();
+          $(view.el).hide();
+          if(children.length == 0 || idx == children.length){
+            $(this.el).append(html);
+          } else {
+            $(children[idx]).before(html);
+          }
+          $(view.el).slideDown(500);
+        }
+      });
+
     }
     return new module();
   }
