@@ -532,30 +532,6 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
    stop();
   });
-  test("Test ArticleView", function () {
-    var m,v,server;
-    server = sinon.fakeServer.create();
-    server.autoRespond = true;
-
-    server.respondWith(
-      "GET", "",
-      ["200", { "Content-Type": "application/json" },
-      stubs.picasa]
-    );
-
-
-    m = new Model.BlogItem({
-      title : 'A fancy title',
-      summary : 'A short description',
-      meta: [
-        { name: 'created', value: '<p> some date</p>'},
-        { name: 'updated', value: '<p> some date</p>'},
-      ],
-    })
-
-    v = new Views.ArticleView({model: m});
-  });
-
   // TODO: write higher level tests that interact with the views/dom
 }
 
