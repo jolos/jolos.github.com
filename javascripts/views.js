@@ -46,12 +46,19 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
                 return Q.reject('invalid');
               }
 
-              promise = callback.call(that);
-              return promise.then(function () {
-                if (silent == undefined || silent == false) {
-                  that.trigger("state:" + next_state, that.getCurrentState(), promise);
-                }
+              var d = Q.defer();
+
+              promise = d.promise.then(function () {
+                return callback.call(that);
               });
+
+              if (silent == undefined || silent == false) {
+                  that.trigger("state:" + next_state, that.getCurrentState(), promise);
+              }
+
+              d.resolve();
+
+              return promise;
           };
           
           var promised_state = this.getPromisedState();
@@ -75,34 +82,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
                 that.deferred.resolve(next_state);
               });
           }
-
-
-          /*
-          successcallback = function () {
-            var queuedTransition, prev_state;
-            console.timeEnd(that.cid + " "+ that.getCurrentState() +"->"+ next_state);
-            that.setCurrentState(next_state);
-            that.deferred.resolve(next_state);
-            // Trigger the event.
-            //that.trigger(prev_state + ':' + next_state);
-          };
-
-          if (transitions && transitions[next_state]) {
-            callback = transitions[next_state];
-          } else if (this.transitions['*'][next_state]) {
-            callback = this.transitions['*'][next_state];
-          } else {
-            return Q.reject('unvalid-state');
-          }
-
-          promise = callback.call(that);
-          if (silent == undefined || silent == false) {
-            that.trigger("state:" + next_state, that.getCurrentState(), promise);
-          }
-
-          promise.fin(successcallback);*/
-
-         
+        
           // TODO: it might be usefull to return a deferred instead of a
           // promise.
           return promise;
@@ -266,6 +246,103 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           }
         }
       );
+ 
+      this.ItemView = function (options) {
+        Backbone.View.apply(this, [options]);
+      };
+
+      this.ItemView.extend = Backbone.View.extend;
+
+      _.extend(
+        this.ItemView.prototype,
+        this.StateView.prototype,
+        {
+        template : {
+          closed : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (closed)</h4></div></div>',
+          start : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (start)</h4></div></div>',
+          default : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (open)</h4><ul class="meta">{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div></div>'
+        },
+        events : {
+          'click .title' : 'onTitleClick'
+        },
+        initialize : function () {
+          this.$el.toggleClass('start');
+          this.states.push('end');
+          this.states.push('open');
+          this.states.push('closed');
+          this.setTransition('start', 'open', function () {
+            var that = this;
+            _gaq.push(['_trackEvent', 'item', 'open', this.model.get('title')]);
+            that.$('.placeholder').animate({width: 0}, 500, 'linear', function () {
+              $(this).hide();
+            });
+
+            return that.model.fetch()
+                .then(function () {
+                  that.render();
+                  return Q.fulfill(that);
+                });
+          });
+
+          this.setTransition('closed', 'open', function () {
+             this.render();
+             return Q.fulfill('ok');
+          });
+
+          this.setTransition('open', 'closed', function () {
+            this.render();
+            return Q.fulfill('ok');
+          });
+
+          this.setTransition('*', 'end', function () {
+            var that, deffered;
+            that = this;
+            deffered = Q.defer();
+            this.$el.slideUp(500, 'linear', function () {
+              deffered.resolve(that);
+              $(this).remove();
+            });
+            return Q.fulfill();
+          });
+
+          this.model.bind('destroy', this.close, this);
+        },
+        close : function () {
+          this.doTransition('end');
+        },
+        onTitleClick : function (event) {
+          if (this.current_state == 'start' || this.current_state == 'closed') {
+            this.doTransition('open');
+          } else {
+            this.doTransition('closed');
+          }
+        },
+        preprocess : function (model) {
+          var meta, created, updated;
+          meta = [];
+          created = model.get('created');
+          updated = model.get('updated');
+          if (created) {
+            meta.push({
+              name : 'created',
+              value: "<i class='foundicon-clock'></i><span> " + created.day + " / " + created.month + " / " + created.year + "</span>"
+            });
+          }
+
+          if (updated) {
+            meta.push({
+              name : 'updated',
+              value: "<i class='foundicon-edit'></i> <span> " + updated.day + " / " + updated.month + " / " + updated.year  + "</span>"
+            });
+          }
+
+          return {
+            title : model.get('title'),
+            summary : model.get('description'),
+            meta : meta
+          };
+        }
+      });
 
       this.AlbumView = this.ArticleView.extend({
         template : {
@@ -452,11 +529,10 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
        });
 
       this.ViewFactory = function() {
-      };
+        this.views = [];
+      }
 
       _.extend(this.ViewFactory.prototype,{
-        views : [],
-
         getView : function(model){
           var tuple = _.find(this.views, function(tuple){
             return model instanceof tuple.model;
@@ -571,16 +647,20 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
               return it.cid != view.cid;
             });
 
+            /*
             promise.fin(function () {
               if (that.views.length == 0) {
                 that.doTransition('empty');
               } else if (that.views.length == 1) {
                 that.views[0].doTransition('open');
               }
-            });
+            });*/
           });
 
           view.bind('state:open', function (evt, promise) {
+            view.getPromisedState().then(function (state) {
+              view.render();
+            });
             var promises = [];
             // Ensure all other itemviews are closed.
             _.each(that.views, function (v) {
@@ -609,6 +689,10 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           }, view);
 
           view.bind('state:closed', function (evt, promise) {
+            view.getPromisedState().then(function (state) {
+              view.render();
+            });
+
             that.doTransition('closed');
             /*that.getPromisedState().then(function (state) {
               if (state == 'open'){

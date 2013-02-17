@@ -56,18 +56,21 @@ define('main', ['backbone', 'underscore', 'q'],
             factory.register(Models.BlogItem, Views.BlogView);
             factory.register(Models.Page, Views.PageView);
             factory.register(Models.InstaPaper, Views.InstaPaperView);
+            var factory2 = new Views.ViewFactory;
+            factory2.register(Models.Gist, Views.ItemView);
+            factory2.register(Models.Album, Views.ItemView);
+            factory2.register(Models.BlogItem, Views.ItemView);
+            factory2.register(Models.Page, Views.ItemView);
+            factory2.register(Models.InstaPaper, Views.ItemView);
+
             // Get an instance of the main view, inject the dependencies.
-            that.appview = new Views.ItemListView({items: that.items.filteredItems, factory: factory});
+            that.appview = new Views.ItemListView({items: that.items.filteredItems, factory: factory2});
             var pane = new Views.MainView({});
             pane.factory = factory;
 
             that.appview.bind('state:open', function(prev_state, promise) {
               var that = this;
-              promise.then(function (view) {
-                that.model = view.model;
-                that.render();
-              });
-            }, pane);
+           }, pane);
             that.bind('route:default', that.items.clean, that.items);
             // TODO: move to ItemListView
             that.items.filteredItems.bind('add', that.appview.addItem, that.appview);
