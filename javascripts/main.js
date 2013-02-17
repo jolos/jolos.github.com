@@ -41,11 +41,11 @@ define('main', ['backbone', 'underscore', 'q'],
 
           // TODO: provide fetchers as an argument of main.
           require(['fetchers'], function (Fetchers) {
-            that.fetchers.push(new Fetchers.GistFetcher('jolos'));
-            that.fetchers.push(new Fetchers.PicasaFetcher("103884336232903331378"));
+            //that.fetchers.push(new Fetchers.GistFetcher('jolos'));
+            //that.fetchers.push(new Fetchers.PicasaFetcher("103884336232903331378"));
             that.fetchers.push(new Fetchers.BlogFetcher('json', './blogs.json'));
-            that.fetchers.push(new Fetchers.PageFetcher('jolos', 'jolos.github.com', 'pages'));
-            that.fetchers.push(new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
+            //that.fetchers.push(new Fetchers.PageFetcher('jolos', 'jolos.github.com', 'pages'));
+            //that.fetchers.push(new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
             Backbone.history.start();
           });
 
@@ -57,8 +57,19 @@ define('main', ['backbone', 'underscore', 'q'],
             factory.register(Models.Page, Views.PageView);
             factory.register(Models.InstaPaper, Views.InstaPaperView);
             // Get an instance of the main view, inject the dependencies.
-            that.appview = new Views.ItemListView({items: that.items, factory: factory});
+            that.appview = new Views.ItemListView({items: that.items.filteredItems, factory: factory});
+            var pane = new Views.MainView({});
+            pane.factory = factory;
+
+            that.appview.bind('state:open', function(prev_state, promise) {
+              var that = this;
+              promise.then(function (view) {
+                that.model = view.model;
+                that.render();
+              });
+            }, pane);
             that.bind('route:default', that.items.clean, that.items);
+            // TODO: move to ItemListView
             that.items.filteredItems.bind('add', that.appview.addItem, that.appview);
             // render the items.
             that.items.filteredItems.each(that.appview.addItem, that.appview);
@@ -373,7 +384,7 @@ define('main', ['backbone', 'underscore', 'q'],
 
     percolate : function (item) {
       if(this.filter.filter(item)){
-        this.filteredItems.add(item.clone());
+        this.filteredItems.add(item);
       }
     },
 
@@ -382,7 +393,7 @@ define('main', ['backbone', 'underscore', 'q'],
       var notfilter = new App.NotFilter(this.filter);
       var dirty_items = this.filteredItems.filter(notfilter.filter);
       _.map(dirty_items, function (item) {
-        item.destroy();
+        that.filteredItems.remove(item);
       });
       this.percolateAll();
     }
@@ -399,6 +410,60 @@ define('main', ['backbone', 'underscore', 'q'],
         return 0;
       }
    });
+
+   App.StateMixin = (function () {
+     function getCurrentState() {
+        return this.current_state;
+      };
+
+      // callback should always return a promise.
+      function setTransition(start_state, end_state, callback) {
+        if (($.inArray(start_state, this.states) !== -1 || start_state === '*') && $.inArray(end_state, this.states) !== -1) {
+          if (!this.transitions[start_state]) {
+            this.transitions[start_state] = {};
+          }
+          this.transitions[start_state][end_state] = callback;
+        }
+      };
+
+      function doTransition(next_state) {
+        var transitions, that, successcallback, promise;
+        transitions = this.transitions[this.current_state];
+
+        that = this;
+        successcallback = function () {
+          var prev_state = that.current_state;
+          that.current_state = next_state;
+          // Trigger the event.
+          that.trigger(prev_state + ':' + next_state);
+        };
+
+        if (transitions && transitions[next_state]) {
+          promise = transitions[next_state].call(this);
+          promise.done(successcallback);
+        } else if (this.transitions['*'][next_state]) {
+          promise = this.transitions['*'][next_state].call(this);
+          promise.done(successcallback);
+        } else {
+          promise = Q.reject('unvalid-state');
+        }
+        
+        return promise;
+      };
+
+      return function () {
+        this.states = ['init'];
+        this.current_state = 'init';
+        this.transitions = {
+          '*' : {}
+        };
+        this.doTransition = doTransition;
+        this.setTransition = setTransition;
+        this.getCurrentState = getCurrentState;
+      };
+    })();
+
+    App.StateMixin.call(App.Router.prototype);
   };
   return new module();
 });

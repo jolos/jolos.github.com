@@ -428,39 +428,110 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
 
   test("Test StateView", function(){
-    expect(6);
+    expect(4);
     var v = new Views.StateView({});
     v.states.push('end');
 
     v.setTransition('start', 'end', function(){
-      return Q.fulfill("ok");
+      var deferred = Q.defer();
+      setTimeout(function () {
+        deferred.resolve("ok");
+      }, 200);
+      return deferred.promise;
     });
 
-    v.on('start:end', function(evt){
-      ok(true, 'Successfully catched start:end transition');
+    v.on('end', function(prev_state, promise){
+      console.log(prev_state);
+      if (prev_state == 'start'){
+        ok(true, 'Successfully catched start:end transition');
+      }
     });
 
     equal(v.getCurrentState(), 'start', 'Initial state is start');
 
     var promise = v.doTransition('end');
     
-    promise.finally(function(){
+    promise.fin(function () {
 
       ok(promise.isFulfilled(), "Successfully transitioned to state end");
 
       equal(v.getCurrentState(), 'end', 'State after transition is state end');
 
-      var failpromise = v.doTransition('start');
-
-      ok(failpromise.isRejected(), "Failed invalid transition end -> start");
-
-      equal(v.getCurrentState(), 'end', 'State after invalid transition is end');
       start();
     });
+
+    var promised_state = v.getPromisedState().then(function (state) {
+      ok(state == 'end', 'promised state is end');
+    });
+
+    var promise2 = v.doTransition('start');
+
     stop();
     
   });
 
+  test("Test StateView 2", function(){
+    expect(6);
+    var v = new Views.StateView({});
+    v.states.push('end');
+    v.states.push('dummy');
+
+    v.setTransition('start', 'start', function(){
+      var deferred = Q.defer();
+      setTimeout(function () {
+        deferred.resolve("ok");
+      }, 200);
+      return deferred.promise;
+    });
+
+    v.setTransition('start', 'dummy', function(){
+      var deferred = Q.defer();
+      setTimeout(function () {
+        deferred.resolve("ok");
+      }, 200);
+      return deferred.promise;
+    });
+
+
+    var promises = [];
+    promises.push(v.doTransition('start'));
+    promises.push(v.doTransition('start'));
+    promises.push(v.doTransition('end'));
+      
+    promises[0].fin(function () {
+      ok(promises[0].isFulfilled(), "1st promise is fulfilled");
+    });
+
+    promises[1].fin(function () {
+      ok(promises[1].isFulfilled(), "2nd promise is fulfilled");
+    });
+
+    
+    // Allow to recover from error.
+    promises[2].fail(function () {
+      ok(true, "3rd promise is rejected");
+
+      // recover
+      return Q.fulfill('ok');
+    });
+
+    promises.push(v.doTransition('dummy'));
+
+    promises[3].fail(function () {
+      ok(v.getCurrentState() == 'start', 'State is start');
+
+      ok(promises[3].isRejected(), "4th promise is rejected");
+
+      // Try again.
+    }).fin(function () {
+     v.doTransition('dummy')
+        .then(function () { 
+          ok(v.getCurrentState() == 'dummy', 'State is dummy');
+        }).fin(function () { start(); });
+    });
+
+   stop();
+  });
   test("Test ArticleView", function () {
     var m,v,server;
     server = sinon.fakeServer.create();
