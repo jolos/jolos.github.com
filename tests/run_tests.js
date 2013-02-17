@@ -318,7 +318,7 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
   test("Test PicasaFetcher ( with stub )", 2, function () {
     stop();
-    var server, promise, items;
+    var server, promise, items, fetcher;
     server = sinon.fakeServer.create();
     server.autoRespond = true;
 
