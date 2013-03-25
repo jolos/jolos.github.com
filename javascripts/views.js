@@ -46,17 +46,19 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
                 return Q.reject('invalid');
               }
 
-              var d = Q.defer();
+              /*var d = Q.defer();
 
               promise = d.promise.then(function () {
                 return callback.call(that);
-              });
+              })*/
+
+              promise = callback.call(that);
 
               if (silent == undefined || silent == false) {
-                  that.trigger("state:" + next_state, that.getCurrentState(), promise);
+                promise = promise.then(function () {
+                  that.trigger("state:" + next_state, that.getCurrentState(), next_state);
+                });
               }
-
-              d.resolve();
 
               return promise;
           };
@@ -89,17 +91,19 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         };
 
         render = function () {
+          var that = this;
+          var state = this.getCurrentState();
           var html, data;
-          data = this.preprocess(this.model);
-          data.state = this.getCurrentState();
+          data = that.preprocess(that.model);
+          data.state = state;
           // use Mustache to render
-          if (this.template[this.getCurrentState()]) {
-            html = Mustache.render(this.template[this.getCurrentState()], data);
+          if (that.template[state]) {
+            html = Mustache.render(that.template[state], data);
           } else {
-            html = Mustache.render(this.template.default, data);
+            html = Mustache.render(that.template.default_state, data);
           }
           // replace the html of the element
-          $(this.el).html(html);
+          $(that.el).html(html);
           // return an instance of the view
           return this;
         };
@@ -142,7 +146,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         this.StateView.prototype,
         {
           template : {
-            default : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <img src="{{src}}"/>{{/thumbnails}}</div></div></div>'
+            default_state : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <img src="{{src}}"/>{{/thumbnails}}</div></div></div>'
           },
           events : {
             'click .title' : 'onTitleClick'
@@ -260,7 +264,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         template : {
           closed : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (closed)</h4></div></div>',
           start : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (start)</h4></div></div>',
-          default : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (open)</h4><ul class="meta">{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div></div>'
+          default_state : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (open)</h4><ul class="meta">{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div></div>'
         },
         events : {
           'click .title' : 'onTitleClick'
@@ -346,7 +350,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
       this.AlbumView = this.ArticleView.extend({
         template : {
-          default : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <a href="{{src}}"><img src="{{thumbsrc}}"/></a>{{/thumbnails}}</div></div></div>'
+          default_state : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <a href="{{src}}"><img src="{{thumbsrc}}"/></a>{{/thumbnails}}</div></div></div>'
         },
 
         render : function () {
@@ -354,16 +358,53 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           data = this.preprocess(this.model);
           data.state = this.current_state;
           // use Mustache to render
+          $(this.el).html(data.state);
+          return this;
+          /*return this;
           if (this.template[this.current_state]) {
             html = Mustache.render(this.template[this.current_state], data);
           } else {
-            html = Mustache.render(this.template.default, data);
+            html = Mustache.render(this.template.default_state, data);
           }
           // replace the html of the element
           $(this.el).html(html);
           if (this.current_state != 'start') {
             this.$('.body a').colorbox({rel: 'thumbnails'});
           }
+          // return an instance of the view
+          return this;*/
+        },
+
+
+        preprocess : function (model) {
+          var meta, created, updated;
+          meta = [];
+          created = model.get('created');
+          updated = model.get('updated');
+          meta.push({name : 'link', value: "<span> <a href='https://plus.google.com/photos/103884336232903331378/albums/"+model.get('id')+"'>View at Google+</a></span>"});
+          meta.push({name : 'created', value: "<i class='foundicon-clock'></i><span> " +created.day + " / " + created.month + " / " + created.year + "</span>" });
+          meta.push({name : 'updated', value: "<i class='foundicon-edit'></i> <span> " +updated.day + " / " + updated.month + " / " + updated.year  +"</span>"});
+          // @todo : show tags in meta
+
+          return {
+            title : model.get('title'),
+            thumbnails : model.get('thumbnails'),
+            summary :  model.get('description'),
+            meta : meta
+          };
+        }
+      });
+
+      this.AlbumView2 = Backbone.View.extend({
+        template : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <a href="{{src}}"><img src="{{thumbsrc}}"/></a>{{/thumbnails}}</div></div></div>' ,
+
+        render : function () {
+          var data, html;
+          data = this.preprocess(this.model);
+          html = Mustache.render(this.template, data);
+          // replace the html of the element
+          $(this.el).html(html);
+          this.$('.body a').colorbox({rel: 'thumbnails'});
           // return an instance of the view
           return this;
         },
@@ -434,7 +475,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
       this.BlogView = this.ArticleView.extend({
         template : {
-          default : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4>{{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{{blog}}}</div></div></div>',
+          default_state : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4>{{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{{blog}}}</div></div></div>',
         },
 
         preprocess : function(model) {

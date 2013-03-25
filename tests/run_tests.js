@@ -532,6 +532,62 @@ function run_tests(Fetchers, stubs, Q, Models, Views) {
 
    stop();
   });
+
+  test("Test StateView 2 (synchronous)", function(){
+    expect(6);
+    var v = new Views.StateView({});
+    v.states.push('end');
+    v.states.push('dummy');
+
+    v.setTransition('start', 'start', function(){
+      return Q.fulfill('ok');
+    });
+
+    v.setTransition('start', 'dummy', function(){
+      return Q.fulfill('ok');
+    });
+
+
+    var promises = [];
+    promises.push(v.doTransition('start'));
+    promises.push(v.doTransition('start'));
+    promises.push(v.doTransition('end'));
+      
+    promises[0].fin(function () {
+      ok(promises[0].isFulfilled(), "1st promise is fulfilled");
+    });
+
+    promises[1].fin(function () {
+      ok(promises[1].isFulfilled(), "2nd promise is fulfilled");
+    });
+
+    
+    // Allow to recover from error.
+    promises[2].fail(function () {
+      ok(true, "3rd promise is rejected");
+
+      // recover
+      return Q.fulfill('ok');
+    });
+
+    promises.push(v.doTransition('dummy'));
+
+    promises[3].fail(function () {
+      ok(v.getCurrentState() == 'start', 'State is start');
+
+      ok(promises[3].isRejected(), "4th promise is rejected");
+
+      // Try again.
+    }).fin(function () {
+     v.doTransition('dummy')
+        .then(function () { 
+          ok(v.getCurrentState() == 'dummy', 'State is dummy');
+        }).fin(function () { start(); });
+    });
+
+   stop();
+  });
+
   // TODO: write higher level tests that interact with the views/dom
 }
 

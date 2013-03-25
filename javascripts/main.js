@@ -41,21 +41,21 @@ define('main', ['backbone', 'underscore', 'q'],
 
           // TODO: provide fetchers as an argument of main.
           require(['fetchers'], function (Fetchers) {
-            //that.fetchers.push(new Fetchers.GistFetcher('jolos'));
-            //that.fetchers.push(new Fetchers.PicasaFetcher("103884336232903331378"));
+            that.fetchers.push(new Fetchers.GistFetcher('jolos'));
+            that.fetchers.push(new Fetchers.PicasaFetcher("103884336232903331378"));
             that.fetchers.push(new Fetchers.BlogFetcher('json', './blogs.json'));
-            //that.fetchers.push(new Fetchers.PageFetcher('jolos', 'jolos.github.com', 'pages'));
-            //that.fetchers.push(new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
+            that.fetchers.push(new Fetchers.PageFetcher('jolos', 'jolos.github.com', 'pages'));
+            that.fetchers.push(new Fetchers.InstaPaperFetcher('http://www.instapaper.com/starred/rss/2609795/rU9MxwxnbvWbQs3kHyhdoLkeGbU'));
             Backbone.history.start();
           });
 
           require(['views', 'models'], function (Views, Models) {
             var factory = new Views.ViewFactory;
-            factory.register(Models.Gist, Views.GistView);
-            factory.register(Models.Album, Views.AlbumView);
-            factory.register(Models.BlogItem, Views.BlogView);
+            factory.register(Models.Gist, Views.ItemView);
+            factory.register(Models.Album, Views.AlbumView2);
+            factory.register(Models.BlogItem, Views.ItemView);
             factory.register(Models.Page, Views.PageView);
-            factory.register(Models.InstaPaper, Views.InstaPaperView);
+            factory.register(Models.InstaPaper, Views.ItemView);
             var factory2 = new Views.ViewFactory;
             factory2.register(Models.Gist, Views.ItemView);
             factory2.register(Models.Album, Views.ItemView);
@@ -67,9 +67,11 @@ define('main', ['backbone', 'underscore', 'q'],
             that.appview = new Views.ItemListView({items: that.items.filteredItems, factory: factory2});
             var pane = new Views.MainView({});
             pane.factory = factory;
+            that.appview.bind('state:open', function(prev_state, next_state) {
+              var view = this;
+              view.model = that.appview.getActiveItem().model;
+              view.render();
 
-            that.appview.bind('state:open', function(prev_state, promise) {
-              var that = this;
            }, pane);
             that.bind('route:default', that.items.clean, that.items);
             // TODO: move to ItemListView
