@@ -53,7 +53,7 @@ define('main', ['backbone', 'underscore', 'q'],
             var factory = new Views.ViewFactory;
             factory.register(Models.Gist, Views.ItemView);
             factory.register(Models.Album, Views.AlbumView2);
-            factory.register(Models.BlogItem, Views.ItemView);
+            factory.register(Models.BlogItem, Views.BlogView);
             factory.register(Models.Page, Views.PageView);
             factory.register(Models.InstaPaper, Views.ItemView);
             var factory2 = new Views.ViewFactory;
@@ -67,10 +67,17 @@ define('main', ['backbone', 'underscore', 'q'],
             that.appview = new Views.ItemListView({items: that.items.filteredItems, factory: factory2});
             var pane = new Views.MainView({});
             pane.factory = factory;
-            that.appview.bind('state:open', function(prev_state, next_state) {
+            that.appview.bind('state:open', function(promise, prev_state) {
               var view = this;
-              view.model = that.appview.getActiveItem().model;
-              view.render();
+              this.doTransition('loading').then(function () {
+                return promise.then(function (activeitem) {
+                  view.model = activeitem.model;
+                  view.render();
+                  return view.doTransition('open').then(function () {
+                    return "ok";
+                  });
+                });
+              }).done();
 
            }, pane);
             that.bind('route:default', that.items.clean, that.items);

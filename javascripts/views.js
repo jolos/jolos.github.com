@@ -4,6 +4,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
   function (Backbone, _, Mustache, Q) {
     'use strict';
     var module = function () {
+      var Views = this;
       this.StateViewMixin = (function () {
         var getCurrentState, setCurrentState, getPromisedState, setTransition, doTransition, render;
         getCurrentState = function () {
@@ -20,7 +21,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
         // callback should always return a promise.
         setTransition = function (start_state, end_state, callback) {
-          if (($.inArray(start_state, this.states) !== -1 || start_state === '*') && $.inArray(end_state, this.states) !== -1) {
+          if (($.inArray(start_state, this.states) !== -1 || start_state === '*') && ($.inArray(end_state, this.states) !== -1) || end_state === '*') {
             if (!this.transitions[start_state]) {
               this.transitions[start_state] = {};
             }
@@ -41,6 +42,8 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
                 callback = transitions[next_state];
               } else if (that.transitions['*'][next_state]) {
                 callback = that.transitions['*'][next_state];
+              } else if (transitions && transitions['*']) {
+                callback = transitions['*'];
               } else {
                 console.log("err: " +state + ":" + next_state);
                 return Q.reject('invalid');
@@ -55,9 +58,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
               promise = callback.call(that);
 
               if (silent == undefined || silent == false) {
-                promise = promise.then(function () {
-                  that.trigger("state:" + next_state, that.getCurrentState(), next_state);
-                });
+                that.trigger('state:' + next_state, promise, state);
               }
 
               return promise;
@@ -134,7 +135,149 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
       _.extend(this.StateView.prototype, Backbone.View.prototype);
 
       this.StateViewMixin.call(this.StateView.prototype);
+
+      this.ScrollPagerMixin = (function () {
+        var nextPage, prevPage, getHeight, getParent, seekToPage, initialize, isValidPage, getTotal, getInnerHeight;
+        // TODO: don't use #main
+        // TODO: add extra height to view to make it a multiple.
+        //
+        getHeight = function () {
+          console.log(this.$el.parent().innerHeight());
+          return this.$el.parent().height();
+        };
+
+        getInnerHeight = function (el) {
+          return el.outerHeight();
+        };
+
+        getTotal = function () {
+          return Math.ceil(getInnerHeight(this.$el) / this.$el.parent().innerHeight());
+        };
+
+        isValidPage = function (page) {
+          return (page >= 0 && page < this.getTotal());
+        };
+
+        seekToPage = function (page) {
+          if (!this.scroll_lock && isValidPage.call(this, page)) {
+            this.scroll_lock = true;
+            var that = this;
+
+            this.$el.animate({
+              top: '-' + (this.$el.parent().innerHeight() * page) + 'px'
+            }, this.scroll_duration, function () {
+              that.page = page;
+              that.scroll_lock = false;
+              that.trigger('change:page', page, 5);
+            });
+          }
+        };
+
+        nextPage = function () {
+          this.seekToPage(this.page + 1);
+        };
+
+        prevPage = function () {
+          this.seekToPage(this.page - 1);
+        };
+
+        initialize = function () {
+          this.$el.css({
+            position: 'relative',
+            overflow: 'hidden'
+          });
+
+          /*
+          var that = this;
+          this.observer = new MutationObserver(function (mutations) {
+            console.log(mutations);
+          });
+
+          this.observer.observe(document.getElementById('sidebar-test'), {attributes : true});
+          */
+        };
+        
+        return function () {
+          this.page = 0;
+          this.scroll_duration = 1000;
+          this.scroll_lock = false;
+          this.extend = Backbone.View.extend;
+          this.nextPage = nextPage;
+          this.hasNext = function () {
+            return isValidPage.call(this, this.page + 1);
+          };
+
+          this.prevPage = prevPage;
+
+          this.hasPrev = function () {
+            return isValidPage.call(this, this.page - 1);
+          };
+
+          this.seekToPage = seekToPage;
+          this.getTotal = getTotal;
+          if (this.initialize) {
+            var super_initialize = this.initialize;
+          }
+
+          this.initialize = function () {
+            if (super_initialize) {
+              super_initialize.call(this);
+            }
+            initialize.call(this);
+          };
+        };
+      })();
       
+      this.PagerView = Backbone.View.extend({
+        template : '<a class="prev">{{prev}}</a><div>{{current_page}} / {{total_pages}}</div><a class="next">{{next}}</a>',
+        constructor : function (attributes, options) {
+          this.view = attributes.view;
+          Backbone.View.apply(this, arguments);
+        },
+        initialize : function () {
+          this.view.on('change:page', this.render, this);
+          this.render(0,0);
+
+        },
+
+        render : function () {
+          var data, html, that = this;
+          data = {
+            current_page : this.view.page + 1, // Add 1 because we start counting at 0
+            total_pages : this.view.getTotal(),
+            prev: '<',
+            next: '>'
+          };
+
+          html = Mustache.render(this.template, data);
+          this.$el.html(html);
+          if (!this.view.hasPrev()) {
+            $('.prev', this.el).removeClass('active');
+
+          } else {
+            $('.prev', this.el).addClass('active');
+
+            // Meh:
+            // http://ianstormtaylor.com/rendering-views-in-backbonejs-isnt-always-simple/
+            $('.prev', this.el).bind('click', function () {
+              that.view.prevPage();
+            });
+          }
+
+          if (!this.view.hasNext()) {
+            $('.next', this.el).removeClass('active');
+          } else {
+            $('.next', this.el).addClass('active');
+
+            $('.next', this.el).bind('click', function () {
+              that.view.nextPage();
+            });
+ 
+          }
+         return this.el;
+        }
+      });
+
       this.ArticleView = function (options) {
         Backbone.View.apply(this, [options]);
       };
@@ -146,7 +289,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         this.StateView.prototype,
         {
           template : {
-            default_state : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <img src="{{src}}"/>{{/thumbnails}}</div></div></div>'
+            default_state : '<section class="section"><p class="title">{{title}}</p><div class="content">{{summary}}</div></section>'
           },
           events : {
             'click .title' : 'onTitleClick'
@@ -261,13 +404,19 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         this.ItemView.prototype,
         this.StateView.prototype,
         {
+        tagName: "section",
         template : {
-          closed : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (closed)</h4></div></div>',
-          start : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (start)</h4></div></div>',
-          default_state : '<div class="row"><div class="twelve columns title"><h4><i class="foundicon-photo"></i> {{title}} (open)</h4><ul class="meta">{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div></div>'
+          closed : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
+          open : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
+          start : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
+          default_state : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>'
         },
         events : {
           'click .title' : 'onTitleClick'
+        },
+        setCurrentState : function (state) {
+          this.current_state = state;
+          this.$el.attr('class', state);
         },
         initialize : function () {
           this.$el.toggleClass('start');
@@ -285,7 +434,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
                 .then(function () {
                   that.render();
                   return Q.fulfill(that);
-                });
+                }).fail(function (err) { console.log(err)});
           });
 
           this.setTransition('closed', 'open', function () {
@@ -322,7 +471,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           }
         },
         preprocess : function (model) {
-          var meta, created, updated;
+          var meta, created, updated, title;
           meta = [];
           created = model.get('created');
           updated = model.get('updated');
@@ -340,8 +489,13 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
             });
           }
 
+          title = model.get('title');
+          if (title.length > 30) {
+            title = title.substring(0, 30) + " ... ";
+          };
+
           return {
-            title : model.get('title'),
+            title : title,
             summary : model.get('description'),
             meta : meta
           };
@@ -396,7 +550,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
       });
 
       this.AlbumView2 = Backbone.View.extend({
-        template : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <a href="{{src}}"><img src="{{thumbsrc}}"/></a>{{/thumbnails}}</div></div></div>' ,
+        template : '<div class="row"><div class="body">{{#thumbnails}} <a href="{{src}}"><img src="{{thumbsrc}}"/></a>{{/thumbnails}}</div></div></div>' ,
 
         render : function () {
           var data, html;
@@ -473,9 +627,34 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
       });
 
-      this.BlogView = this.ArticleView.extend({
-        template : {
+      this.BlogView = Backbone.View.extend({
+        /*template : {
           default_state : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4>{{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{{blog}}}</div></div></div>',
+        },*/
+
+        template : '<div class="blog">{{{blog}}}</div>',
+
+        initialize : function () {
+          var that = this;
+          this.$el.mousewheel(function (event, d, dX, dY) {
+            if (dY < 0) {
+              that.nextPage();
+            } else if (dY > 0) {
+              that.prevPage();
+            }
+          });
+        },
+
+        render : function () {
+          var data, html;
+          $('.header h1').html(this.model.get('title'));
+          data = this.preprocess(this.model);
+          html = Mustache.render(this.template, data);
+          // replace the html of the element
+          $(this.el).html(html);
+          //this.$('.body a').colorbox({rel: 'thumbnails'});
+          // return an instance of the view
+          return this;
         },
 
         preprocess : function(model) {
@@ -490,6 +669,8 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           };
         },
       });
+
+      this.ScrollPagerMixin.call(this.BlogView.prototype);
 
       this.InstaPaperView = Backbone.View.extend({
         template :  '<div class="row instapaper"><div class="three columns"></div><div class="nine columns"><h4><a href="{{url}}"><i class="foundicon-star"></i> {{url_shortened}}</a></h4><p>{{title}} </p><p>{{{summary}}}</p></div></div>',
@@ -541,7 +722,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
 
         this.PageView = Backbone.View.extend({
-          template : '<div class="row">{{{content}}}</div>',
+          template : '<div class="row">----</div>',
 
           initialize : function(){
             this.model.bind('destroy', this.remove, this);
@@ -553,9 +734,9 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
           render : function(){
             var data, html;
-            data =this.preprocess(this.model)
+            //data =this.preprocess(this.model)
             // use Mustache to render
-            html = Mustache.render(this.template, data);
+            html = Mustache.render(this.template, {});
             // replace the html of the element
             $(this.el).html(html);
             // return an instance of the view
@@ -564,7 +745,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
           preprocess : function(model) {
             return {
-              content : model.get('content'),
+              content : 'content',
             };
           },
        });
@@ -595,13 +776,44 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
       this.MainView = Backbone.View.extend({
         el: $('#main'),
 
-        render: function () {
-          this.view = this.factory.getView(this.model);
-          var html = this.view.render().el;
-          $(this.el).html(html);
-          return this;
-        }
-      });
+        initialize : function () {
+          this.states.push('loading');
+          this.states.push('open');
+          this.states.push('error');
+
+          this.setTransition('*', 'loading', function () {
+            var deferred = Q.defer();
+            this.$el.fadeOut({
+              duration: 1000,
+              complete: function () {
+                deferred.resolve('empty');
+              }
+            });
+            return deferred.promise;
+          });
+          
+          this.setTransition('loading', '*', function () {
+            var deferred = Q.defer();
+            this.$el.fadeIn({
+              duration: 1000,
+              complete: function () {
+                deferred.resolve('empty');
+              }
+            });
+            return deferred.promise;
+          });
+        },
+     });
+
+      this.StateViewMixin.call(this.MainView.prototype);
+
+      this.MainView.prototype.render = function () {
+        this.view = this.factory.getView(this.model);
+        var html = this.view.render().el;
+        $(this.el).html(html);
+        return this;
+      };
+ 
 
       this.ItemListView = Backbone.View.extend({
         el : $('#items'),
@@ -617,10 +829,21 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           this.states.push('end');
           var that = this;
 
+          this.$el.mousewheel(function (event, d, dX, dY) {
+            if (dY < 0) {
+              that.nextPage();
+            } else if (dY > 0) {
+              that.prevPage();
+            }
+          });
+
+
           this.items.bind('remove', function (model) {
             _.each(that.views, function (v) {
               if (v.model === model) {
-                v.doTransition('end');
+                v.doTransition('end').then(function () {
+                  that.trigger('item:removed');
+                });
               }
             });
           }, this.items);
@@ -670,6 +893,23 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           });
 
           this.doTransition('empty');
+
+          var pager = new Views.PagerView({view: this});
+
+          $('.item-pager').html(pager.render(0));
+          //this.$el.parent().after(pager.render(0));
+
+          this.bind('change:total', pager.render, pager);
+
+          var prev_total = this.getTotal();
+          this.bind('item:added item:removed', function () {
+            var total = this.getTotal();
+            if (total != prev_total) {
+              prev_total = total; 
+              this.seekToPage(0);
+              this.trigger('change:total');
+            }
+          });
         },
 
         getActiveItem : function () {
@@ -682,11 +922,13 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
         bindToView : function (view) {
           var that = this;
-          view.bind('state:end', function (prev_state, promise) {
+          view.bind('state:end', function (promise, prev_state) {
             // When a view is destroyed we have to remove it from the array.
-            that.views = _.filter(that.views, function (it) {
-              return it.cid != view.cid;
-            });
+            promise.then(function () {
+              that.views = _.filter(that.views, function (it) {
+                return it.cid != view.cid;
+              });
+            }).done();
 
             /*
             promise.fin(function () {
@@ -698,10 +940,11 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
             });*/
           });
 
-          view.bind('state:open', function (evt, promise) {
-            view.getPromisedState().then(function (state) {
+          view.bind('state:open', function (promise, prev_state) {
+            promise.then(function () {
               view.render();
-            });
+            }).done();
+
             var promises = [];
             // Ensure all other itemviews are closed.
             _.each(that.views, function (v) {
@@ -710,7 +953,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
                   return v.doTransition('closed', true);
                 }
                 return Q.fulfill(state);
-              });
+              }).done();
               promises.push(p);
             });
 
@@ -718,10 +961,10 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
             if (promises.length !=0) {
               Q.all(promises).then(function () {
-                that.doTransition('open');
+                return that.doTransition('open');
               }).done();
             } else {
-                that.doTransition('open');
+              that.doTransition('open').done();;
             }
 
             // TODO: if promise failed, revert state change. <-- should be done,
@@ -729,12 +972,12 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
             
           }, view);
 
-          view.bind('state:closed', function (evt, promise) {
-            view.getPromisedState().then(function (state) {
+          view.bind('state:closed', function (promise, prev_state) {
+            promise.then(function (view) {
               view.render();
-            });
+            }).done();
 
-            that.doTransition('closed');
+            that.doTransition('closed').done();
             /*that.getPromisedState().then(function (state) {
               if (state == 'open'){
                 that.doTransition('closed');
@@ -744,7 +987,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         },
 
         addItem : function (item) {
-          var view, html, idx, children;
+          var view, html, idx, children,that = this;
           view = this.factory.getView(item);
 
           this.bindToView(view);
@@ -762,7 +1005,10 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           } else {
             $(children[idx]).before(html);
           }
-          $(view.el).slideDown(500);
+
+          $(view.el).slideDown(1000, function () {
+            that.trigger('item:added');
+          });
 
           if (this.getCurrentState() == 'empty') {
             this.doTransition('closed');
@@ -771,6 +1017,8 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
       });
 
       this.StateViewMixin.call(this.ItemListView.prototype);
+      this.ScrollPagerMixin.call(this.ItemListView.prototype);
+
    }
     return new module();
   }

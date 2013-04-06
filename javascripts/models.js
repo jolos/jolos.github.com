@@ -40,6 +40,8 @@ define('models', ['backbone', 'underscore', 'q'],
             .then(function (item) {
                // update the model and return it.
               return that.set(that.parse(item));
+            }, function (err) { 
+              console.log(err);
             });
         }
       });

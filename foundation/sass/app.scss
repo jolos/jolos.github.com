@@ -1,0 +1,347 @@
+// Global Foundation Settings
+@import "settings";
+
+// Comment out this import if you are customizing you imports below
+@import "foundation";
+
+// Import specific parts of Foundation by commenting the import "foundation"
+// and uncommenting what you want below. You must uncomment the following if customizing
+
+@import "foundation/foundation-global"; // *always required
+@import "foundation/components/global"; // *always required
+@import "foundation/components/grid";
+@import "foundation/components/visibility";
+
+// @import "foundation/components/block-grid";
+// @import "foundation/components/type";
+// @import "foundation/components/buttons";
+// @import "foundation/components/forms"; // *requires components/buttons
+// @import "foundation/components/custom-forms"; // *requires components/buttons, components/forms
+// @import "foundation/components/button-groups"; // *requires components/buttons
+// @import "foundation/components/dropdown-buttons"; // *requires components/buttons
+// @import "foundation/components/split-buttons"; // *requires components/buttons
+// @import "foundation/components/flex-video";
+// @import "foundation/components/section";
+// @import "foundation/components/top-bar";  // *requires components/grid
+// @import "foundation/components/orbit";
+// @import "foundation/components/reveal";
+// @import "foundation/components/joyride";
+// @import "foundation/components/clearing";
+// @import "foundation/components/alert-boxes";
+// @import "foundation/components/breadcrumbs";
+// @import "foundation/components/keystrokes";
+// @import "foundation/components/labels";
+// @import "foundation/components/inline-lists";
+// @import "foundation/components/pagination";
+// @import "foundation/components/panels";
+// @import "foundation/components/pricing-tables";
+// @import "foundation/components/progress-bars";
+// @import "foundation/components/side-nav";
+// @import "foundation/components/sub-nav";
+// @import "foundation/components/switch";
+// @import "foundation/components/magellan";
+// @import "foundation/components/tables";
+// @import "foundation/components/thumbs";
+// @import "foundation/components/tooltips";
+// @import "foundation/components/dropdown";
+
+.icons {
+  font-size: 40px;
+  margin-top: 0.5em;
+  text-align: center;
+}
+
+#sidebar {
+  .sidebar-body {
+    position: absolute;
+    overflow: hidden;
+    bottom: 50px;
+    top: 250px;
+  }
+
+  .item-pager {
+    position: absolute;
+    bottom: 0; 
+    height: 50px;
+  }
+}
+
+.www {
+   position: fixed; 
+   z-index: -1;
+   left: 3em; 
+   bottom: 3em;
+   background-image: url("/files/www.png");
+   background-repeat: no-repeat;
+    .overlay {
+     height:150px; 
+     width:200px;
+     background-color: #FFF;
+     opacity: 0.8;
+    }
+}
+
+
+.main-container {
+  margin-left: 512px;
+  //position: absolute;
+  top: 0;
+  .main-content {
+    position: static;
+  }
+}
+
+header {
+	background-color : #FF6633;
+
+	h1 {
+		color : #FFFFFF;
+		font-weight: 300;
+		font-family : "OpenSans", "Helvetica Neue", "Helvetica", Arial, Verdana, sans-serif;
+	}
+
+	h5 {
+		color : #FFFFFF;
+		font-weight: 300;
+	}
+
+	div.external-links {
+		float : right;
+	}
+
+	ul.link-list {
+		margin-top : 0.1em;
+		margin-right : 0.5em;
+
+		li {
+			margin-left: 10px;
+		}
+
+		a:hover, a {
+			font-weight : 500;
+			font-size : small;
+			color : #FFFFFF;
+		}
+	}
+}
+
+ul.link-list  {
+		margin-top : 1em;
+
+		font-weight: 500;
+		font-size: 500;
+
+		a:hover, a {
+			color : #FF6633;
+		}
+}
+
+.title {
+	h4 {
+		color : #FF6633;
+		font-weight: 300;
+		font-size: 300;
+		cursor : pointer;
+	}
+}
+
+div.open {
+	.placeholder {
+		width : 0;
+	}
+
+}
+
+.instapaper h4{
+       	 a:hover,a {
+		font-weight: 400;
+		color : #FF6633;
+	}
+}
+
+ul.meta {
+
+	width : 25%;
+
+	p {
+		color : #4F4F4F;
+	}
+
+	li {
+	   border-top: 1px dotted #CCCCCC;
+	   list-style: none outside none;
+	   padding: 5px 25px 5px 0;
+	   float: left;
+	}
+}
+
+.title {
+	height : 4em;
+}
+
+div.closed {
+
+	.meta {
+		display : none;
+	}
+}
+
+div.start {
+	.meta {
+		display : none;
+	}
+}
+
+.scrollable-wrapper {
+  //width: 450px;
+  overflow: hidden;
+  max-height: 900px;
+}
+
+.item-container {
+  //overflow-y: scroll;
+  //width: 460px;
+  section {
+        //color: #FF6633;
+    color: #6E6E6E;
+    //overflow: hidden;
+    i {
+      font-size: 1.5em;
+    }
+
+    margin-bottom: 15px;
+    .title {
+      width: 90%;
+      margin-left: 0.2em;
+      padding-left: 0.5em;
+      padding-bottom: 42px;
+      display: inline-block;
+      border-bottom-style: dashed;
+      border-color: #E6E6E6;
+      border-width: 1px;
+
+      font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
+      font-weight: 400;
+      font-size: 1.8em;
+      height: 1em;
+      letter-spacing: -1.3px;
+      cursor: pointer;
+
+    }
+  }
+
+  section.open {
+    color: #FF6633;
+  }
+}
+
+.item-pager {
+   color: #FF6633;
+   font-size: 3em;
+   //text-align: center;
+   padding-bottom: 1em;
+   padding-top: 1em;
+   //padding-left: 2em;
+   text-align: center;
+  
+   div {
+     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
+     display: inline;
+     margin-left: 0.5em;
+     margin-right: 0.5em;
+   }
+
+   a {
+    color: #6E6E6E;
+    font-weight: 100;
+   }
+
+   a.active {
+    font-weight: 900;
+    cursor: pointer;
+   }
+
+   a.active:hover {
+     color: #FF6633;
+   }
+}
+
+.header {
+  h1 {
+    color: #666666;
+    font-weight: 200;
+    font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
+    line-height: 1.5em;
+    font-size: 4em;
+    //margin-top: 1em;
+    letter-spacing: -5px;
+  }
+}
+
+.main-pane {
+  //height: 800px;
+  //border-style: dashed;
+  //border-color: black;
+  //overflow: hidden;
+}
+
+#main {
+  //heightauto;
+  //margin: 2em;
+  //margin-left: 4em;
+  max-width: 900px;
+  margin-right: 50px;
+  float: right;
+  .blog {
+    font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
+    color: #444444;
+    font-size: 1.3em;
+    text-align: justify;
+  }
+}
+/*
+    ColorBox Core Style:
+    The following CSS is consistent between example themes and should not be altered.
+*/
+#colorbox, #cboxOverlay, #cboxWrapper{position:absolute; top:0; left:0; z-index:9999; overflow:hidden;}
+#cboxOverlay{position:fixed; width:100%; height:100%;}
+#cboxMiddleLeft, #cboxBottomLeft{clear:left;}
+#cboxContent{position:relative;}
+#cboxLoadedContent{overflow:auto;}
+#cboxTitle{margin:0;}
+#cboxLoadingOverlay, #cboxLoadingGraphic{position:absolute; top:0; left:0; width:100%; height:100%;}
+#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow{cursor:pointer;}
+.cboxPhoto{float:left; margin:auto; border:0; display:block; max-width:none;}
+.cboxIframe{width:100%; height:100%; display:block; border:0;}
+#colorbox, #cboxContent, #cboxLoadedContent{box-sizing:content-box;}
+
+/* 
+    User Style:
+    Change the following styles to modify the appearance of ColorBox.  They are
+    ordered & tabbed in a way that represents the nesting of the generated HTML.
+*/
+#cboxOverlay{background:#fff;}
+#colorbox{
+    #cboxContent{margin-top:32px; overflow:visible;}
+        .cboxIframe{background:#fff;}
+        #cboxError{padding:50px; border:1px solid #ccc;}
+        #cboxLoadedContent{background:#000; padding:1px;}
+        #cboxLoadingGraphic{background:url(images/loading.gif) no-repeat center center;}
+        #cboxLoadingOverlay{background:#000;}
+        #cboxTitle{position:absolute; top:-22px; left:0; color:#000;}
+        #cboxCurrent{position:absolute; top:-22px; right:205px; text-indent:-9999px;}
+        #cboxSlideshow, #cboxPrevious, #cboxNext, #cboxClose{text-indent:-9999px; width:20px; height:20px; position:absolute; top:-20px; background:url(images/controls.png) no-repeat 0 0;}
+        #cboxPrevious{background-position:0px 0px; right:44px;}
+        #cboxPrevious:hover{background-position:0px -25px;}
+        #cboxNext{background-position:-25px 0px; right:22px;}
+        #cboxNext:hover{background-position:-25px -25px;}
+        #cboxClose{background-position:-50px 0px; right:0;}
+        #cboxClose:hover{background-position:-50px -25px;}
+        .cboxSlideshow_on #cboxPrevious, .cboxSlideshow_off #cboxPrevious{right:66px;}
+        .cboxSlideshow_on #cboxSlideshow{background-position:-75px -25px; right:44px;}
+        .cboxSlideshow_on #cboxSlideshow:hover{background-position:-100px -25px;}
+        .cboxSlideshow_off #cboxSlideshow{background-position:-100px 0px; right:44px;}
+        .cboxSlideshow_off #cboxSlideshow:hover{background-position:-75px -25px;}
+}
+
+
