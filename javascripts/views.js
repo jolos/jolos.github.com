@@ -5,8 +5,10 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
     'use strict';
     var module = function () {
       var Views = this;
-      this.StateViewMixin = (function () {
-        var getCurrentState, setCurrentState, getPromisedState, setTransition, doTransition, render;
+
+      // TODO: rename to StateMixin.
+      this.StateMixin = (function () {
+        var getCurrentState, setCurrentState, getPromisedState, setTransition, doTransition;
         getCurrentState = function () {
           return this.current_state;
         };
@@ -21,7 +23,8 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
         // callback should always return a promise.
         setTransition = function (start_state, end_state, callback) {
-          if (($.inArray(start_state, this.states) !== -1 || start_state === '*') && ($.inArray(end_state, this.states) !== -1) || end_state === '*') {
+          if (($.inArray(start_state, this.states) !== -1 || start_state === '*') 
+           && ($.inArray(end_state, this.states) !== -1) || end_state === '*') {
             if (!this.transitions[start_state]) {
               this.transitions[start_state] = {};
             }
@@ -39,12 +42,18 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
               var promise, transitions;
               transitions = that.transitions[state];
               if (transitions && transitions[next_state]) {
+                // Normal case, a transition callback is available.
                 callback = transitions[next_state];
               } else if (that.transitions['*'][next_state]) {
+                // Check if there's a wildcard transition callback available.
                 callback = that.transitions['*'][next_state];
               } else if (transitions && transitions['*']) {
+                // Check if there's a wildcard callback available for getting
+                // into the next state.
                 callback = transitions['*'];
               } else {
+                // We couldn't find any statechange callback, this means this is
+                // an invalid transition.
                 console.log("err: " +state + ":" + next_state);
                 return Q.reject('invalid');
               }
@@ -55,9 +64,12 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
                 return callback.call(that);
               })*/
 
+              // We get the promise from the transition callback.
               promise = callback.call(that);
 
               if (silent == undefined || silent == false) {
+                // Fire an event to warn listeners that a state transition has
+                // been started.
                 that.trigger('state:' + next_state, promise, state);
               }
 
@@ -91,24 +103,6 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           return promise;
         };
 
-        render = function () {
-          var that = this;
-          var state = this.getCurrentState();
-          var html, data;
-          data = that.preprocess(that.model);
-          data.state = state;
-          // use Mustache to render
-          if (that.template[state]) {
-            html = Mustache.render(that.template[state], data);
-          } else {
-            html = Mustache.render(that.template.default_state, data);
-          }
-          // replace the html of the element
-          $(that.el).html(html);
-          // return an instance of the view
-          return this;
-        };
-
         return function () {
           this.tagName = 'div';
           this.states = ['start'];
@@ -117,7 +111,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           this.transitions = {
             '*' : {}
           };
-          this.render = render;
+          //this.render = render;
           this.doTransition = doTransition;
           this.setTransition = setTransition;
           this.getCurrentState = getCurrentState;
@@ -134,7 +128,25 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
 
       _.extend(this.StateView.prototype, Backbone.View.prototype);
 
-      this.StateViewMixin.call(this.StateView.prototype);
+      this.StateView.extend = Backbone.View.extend;
+
+      this.StateMixin.call(this.StateView.prototype);
+
+      this.StateView.prototype.render = function () {
+        var html, data, that = this, state = this.getCurrentState();
+        data = that.preprocess(that.model);
+        data.state = state;
+        // use Mustache to render
+        if (that.template[state]) {
+          html = Mustache.render(that.template[state], data);
+        } else {
+          html = Mustache.render(that.template.default_state, data);
+        }
+        // replace the html of the element
+        $(that.el).html(html);
+        // return an instance of the view
+        return this;
+      };
 
       this.ScrollPagerMixin = (function () {
         var nextPage, prevPage, getHeight, getParent, seekToPage, initialize, isValidPage, getTotal, getInnerHeight;
@@ -278,6 +290,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         }
       });
 
+      // TODO: articleview can be removed.
       this.ArticleView = function (options) {
         Backbone.View.apply(this, [options]);
       };
@@ -393,18 +406,11 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           }
         }
       );
- 
-      this.ItemView = function (options) {
-        Backbone.View.apply(this, [options]);
-      };
 
-      this.ItemView.extend = Backbone.View.extend;
-
-      _.extend(
-        this.ItemView.prototype,
-        this.StateView.prototype,
-        {
+      this.ItemView = this.StateView.extend({
         tagName: "section",
+        // TODO: provide a way to have different icons for different types of
+        // items.
         template : {
           closed : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
           open : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
@@ -502,6 +508,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         }
       });
 
+      // TODO: this is deprecated, remove it.
       this.AlbumView = this.ArticleView.extend({
         template : {
           default_state : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4><i class="foundicon-photo"></i> {{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{#thumbnails}} <a href="{{src}}"><img src="{{thumbsrc}}"/></a>{{/thumbnails}}</div></div></div>'
@@ -617,21 +624,15 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
             });
           }
 
-
           return {
             title : model.get('title'),
             body : body,
             meta : meta
           };
         },
-
       });
 
       this.BlogView = Backbone.View.extend({
-        /*template : {
-          default_state : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4>{{title}}</h4><ul class="meta"><p> {{summary}}</p>{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{{blog}}}</div></div></div>',
-        },*/
-
         template : '<div class="blog">{{{blog}}}</div>',
 
         initialize : function () {
@@ -773,7 +774,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         },
       });
 
-      this.MainView = Backbone.View.extend({
+      this.MainView = this.StateView.extend({
         el: $('#main'),
 
         initialize : function () {
@@ -805,9 +806,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         },
      });
 
-      this.StateViewMixin.call(this.MainView.prototype);
-
-      this.MainView.prototype.render = function () {
+     this.MainView.prototype.render = function () {
         this.view = this.factory.getView(this.model);
         var html = this.view.render().el;
         $(this.el).html(html);
@@ -1016,7 +1015,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         }
       });
 
-      this.StateViewMixin.call(this.ItemListView.prototype);
+      this.StateMixin.call(this.ItemListView.prototype);
       this.ScrollPagerMixin.call(this.ItemListView.prototype);
 
    }
