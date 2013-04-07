@@ -16,12 +16,14 @@
 	<!-- Included CSS Files -->
 	<link rel="stylesheet" href="foundation/stylesheets/app.css">
         <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+        <script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
         <!--<link href='skeleton/stylesheets/base.css' rel='stylesheet' type='text/css'>-->
         <!--<link href='skeleton/stylesheets/skeleton.css' rel='stylesheet' type='text/css'> -->
         <!--<link href='skeleton/stylesheets/layout.css' rel='stylesheet' type='text/css'>-->
         <link rel="stylesheet" href="foundation/stylesheets/general_enclosed_foundicons.css">
         <link rel="stylesheet" href="foundation/stylesheets/social_foundicons.css">
-        <!--<link rel="stylesheet" href="stylesheets/styles/tomorrow.css">-->
+        <link rel="stylesheet" href="stylesheets/styles/tomorrow.css">
         <script src="http://requirejs.org/docs/release/2.1.4/minified/require.js"></script>
         <!--<script src="javascripts/foundation/modernizr.foundation.js"></script>-->
 	<script type="text/javascript">
@@ -54,11 +56,73 @@
                     }
                 });
 
-                require(['main','jquery.mousewheel'], function (App) {
+                define('templates', ['handlebars'] , function () {
+                  var templates = $('.template');
+                  var compiled_templates = {};
+                  for (var i=0; i < templates.length; i++){
+                    var viewname = $(templates[i]).data('view-name');
+                    var state = $(templates[i]).data('state');
+                    if (!compiled_templates[viewname]) {
+                      compiled_templates[viewname] = {};
+                    }
+
+                    compiled_templates[viewname][state] = Handlebars.compile($(templates[i]).html());
+                  }
+
+                  return compiled_templates;
+                });
+
+                require(['main','jquery.mousewheel', 'handlebars'], function (App) {
                   var rtr = new App.Router;
                 });
                 //require(['fetchers','stub_responses','q','models','views'], run_tests);
         </script>
+
+        <script class="template" data-view-name="gist" data-state="default" type="text/x-handlebars-template">
+          This is a gist.
+        </script>
+
+        <script class="template" data-view-name="main" data-state="start" type="text/x-handlebars-template">
+          <div class="text"><p>Hey! Welcome to my website.</p></div>
+        </script>
+
+        <script class="template" data-view-name="main" data-state="loading" type="text/x-handlebars-template">
+          <div class="loading">  ... Loading ... </div>
+        </script>
+
+        <script class="template" data-view-name="item" data-state="default_state" type="text/x-handlebars-template">
+          <i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>
+        </script>
+
+        <script class="template" data-view-name="item" data-state="start" type="text/x-handlebars-template">
+          <i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>
+        </script>
+
+        <script class="template" data-view-name="item" data-state="open" type="text/x-handlebars-template">
+          <i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>
+        </script>
+
+        <script class="template" data-view-name="item" data-state="closed" type="text/x-handlebars-template">
+          <i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>
+        </script>
+
+        <script class="template" data-view-name="blog" data-state="default_state" type="text/x-handlebars-template">
+           <div class="text">{{{blog}}}</div>
+        </script>
+
+        <script class="template" data-view-name="instapaper" data-state="default_state" type="text/x-handlebars-template">
+<div class="text"><p><h4><a href='{{url}}'>{{title}}</a></h4></p><p>{{url}}</p><p> {{description}}</p></div>
+        </script>
+	
+        <script class="template" data-view-name="header" data-state="default_state" type="text/x-handlebars-template">
+          <h1>{{title}} </h1><p class="description">{{{description}}}</p>
+        </script>
+        	
+        <script class="template" data-view-name="gist" data-state="default_state" type="text/x-handlebars-template">
+          <div class="text">{{{gist}}}</div>
+        </script>
+
+
 
 	<!-- IE Fix for HTML5 Tags -->
 	<!--[if lt IE 9]>
@@ -83,7 +147,7 @@
 
              <div class="large-7 large-offset-1 columns">
                <div class="row">
-                  <div class="header">
+                  <div id="header" class="header">
                      <h1>Welkom</h1>
                   </div>
                </div>

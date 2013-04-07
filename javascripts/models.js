@@ -34,15 +34,22 @@ define('models', ['backbone', 'underscore', 'q'],
         // TODO: find out, why this isn't available in the prototype.
         sync: function () {
           // At the moment we don't need all the extra things Backbone.sync does
-          var that = this;
-          // TODO: we should handle different dataTypes
-          return Q.when(jQuery.ajax(this.getParams()))
-            .then(function (item) {
-               // update the model and return it.
-              return that.set(that.parse(item));
-            }, function (err) { 
-              console.log(err);
-            });
+          var that = this, params = this.getParams();
+
+
+          // We need at least a url to execute an ajax call.
+          if (params.url) {
+            return Q.when(jQuery.ajax(this.getParams()))
+              .then(function (item) {
+                 // update the model and return it.
+                return that.set(that.parse(item));
+              }, function (err) { 
+                console.log(err);
+              });
+          }
+
+          // No url? Don't do an ajax call and just return a fulfilled promise.
+          return Q.fulfill(this);
         }
       });
 
@@ -70,6 +77,7 @@ define('models', ['backbone', 'underscore', 'q'],
         },
         getParams: function () {
           return {
+
             url: './blogs/' + this.get('id'),
             dataType: 'text'
           };
@@ -82,6 +90,9 @@ define('models', ['backbone', 'underscore', 'q'],
       this.InstaPaper = this.Item.extend({
         getType: function () {
           return 'instapaper';
+        },
+        getParams: function () {
+          return {};
         }
       });
 

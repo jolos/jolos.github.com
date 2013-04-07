@@ -1,7 +1,7 @@
 /*jslint indent: 2, browser: true */
 /*global define, jQuery, require,$*/
 define('main', ['backbone', 'underscore', 'q'],
-  function (Backbone, _, Q) {
+  function (Backbone, _, Q, templates) {
     'use strict';
     window.error_log = function (type, msg) {
       console.log(msg); 
@@ -51,11 +51,11 @@ define('main', ['backbone', 'underscore', 'q'],
 
           require(['views', 'models'], function (Views, Models) {
             var factory = new Views.ViewFactory;
-            factory.register(Models.Gist, Views.ItemView);
+            factory.register(Models.Gist, Views.GistView);
             factory.register(Models.Album, Views.AlbumView2);
             factory.register(Models.BlogItem, Views.BlogView);
             factory.register(Models.Page, Views.PageView);
-            factory.register(Models.InstaPaper, Views.ItemView);
+            factory.register(Models.InstaPaper, Views.InstaPaperView);
             var factory2 = new Views.ViewFactory;
             factory2.register(Models.Gist, Views.ItemView);
             factory2.register(Models.Album, Views.ItemView);
@@ -66,19 +66,28 @@ define('main', ['backbone', 'underscore', 'q'],
             // Get an instance of the main view, inject the dependencies.
             that.appview = new Views.ItemListView({items: that.items.filteredItems, factory: factory2});
             var pane = new Views.MainView({});
+            pane.render();
             pane.factory = factory;
+            var headerview = new Views.HeaderView;
             that.appview.bind('state:open', function(promise, prev_state) {
               var view = this;
+              promise.then(function (activeitem) {
+                var model = activeitem.model;
+                headerview.model = model;
+                headerview.render();
+              }).done();
+
               this.doTransition('loading').then(function () {
                 return promise.then(function (activeitem) {
                   view.model = activeitem.model;
-                  view.render();
-                  return view.doTransition('open').then(function () {
-                    return "ok";
-                  });
+                  return view.doTransition('open');
                 });
-              }).done();
-
+              }).fin(function () {
+                view.render();
+                view.$el.fadeIn({
+                  duration: 1000
+                });
+              });
            }, pane);
             that.bind('route:default', that.items.clean, that.items);
             // TODO: move to ItemListView
@@ -115,7 +124,6 @@ define('main', ['backbone', 'underscore', 'q'],
           var alias, path, filters, typefilters, filter, typefilter;
           alias = this.aliases[actions];
           
-
           if (alias) {
             path = _.filter(alias.split("/"), function (str) { return str });
           } else {
@@ -422,60 +430,6 @@ define('main', ['backbone', 'underscore', 'q'],
         return 0;
       }
    });
-
-   App.StateMixin = (function () {
-     function getCurrentState() {
-        return this.current_state;
-      };
-
-      // callback should always return a promise.
-      function setTransition(start_state, end_state, callback) {
-        if (($.inArray(start_state, this.states) !== -1 || start_state === '*') && $.inArray(end_state, this.states) !== -1) {
-          if (!this.transitions[start_state]) {
-            this.transitions[start_state] = {};
-          }
-          this.transitions[start_state][end_state] = callback;
-        }
-      };
-
-      function doTransition(next_state) {
-        var transitions, that, successcallback, promise;
-        transitions = this.transitions[this.current_state];
-
-        that = this;
-        successcallback = function () {
-          var prev_state = that.current_state;
-          that.current_state = next_state;
-          // Trigger the event.
-          that.trigger(prev_state + ':' + next_state);
-        };
-
-        if (transitions && transitions[next_state]) {
-          promise = transitions[next_state].call(this);
-          promise.done(successcallback);
-        } else if (this.transitions['*'][next_state]) {
-          promise = this.transitions['*'][next_state].call(this);
-          promise.done(successcallback);
-        } else {
-          promise = Q.reject('unvalid-state');
-        }
-        
-        return promise;
-      };
-
-      return function () {
-        this.states = ['init'];
-        this.current_state = 'init';
-        this.transitions = {
-          '*' : {}
-        };
-        this.doTransition = doTransition;
-        this.setTransition = setTransition;
-        this.getCurrentState = getCurrentState;
-      };
-    })();
-
-    App.StateMixin.call(App.Router.prototype);
   };
   return new module();
 });

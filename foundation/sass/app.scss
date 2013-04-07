@@ -267,14 +267,25 @@ div.start {
 }
 
 .header {
+  height: 200px;
   h1 {
     color: #666666;
     font-weight: 200;
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
     line-height: 1.5em;
     font-size: 4em;
-    //margin-top: 1em;
+    //margin-top: 1e.em;
+    margin-bottom: 0.2em;
     letter-spacing: -5px;
+
+  }
+
+ .description {
+    color: #666666;
+    font-weight: 200;
+    font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
+    font-size: 1.5em;
+    margin-left: 1.5em;
   }
 }
 
@@ -290,13 +301,29 @@ div.start {
   //margin: 2em;
   //margin-left: 4em;
   max-width: 900px;
+  min-width: 600px;
   margin-right: 50px;
   float: right;
-  .blog {
+  .text {
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
     color: #444444;
     font-size: 1.3em;
     text-align: justify;
+  }
+
+  code {
+    @include panel;
+    @include radius;
+  }
+
+  code {
+   font-family: 'Inconsolata', sans-serif; 
+   font-size: 1.4em;
+   line-height: 1.2em;
+   font-weight: 400;
+   color: #333333;
+   overflow: hidden;
+   z-index: 2;
   }
 }
 /*
@@ -311,8 +338,8 @@ div.start {
 #cboxTitle{margin:0;}
 #cboxLoadingOverlay, #cboxLoadingGraphic{position:absolute; top:0; left:0; width:100%; height:100%;}
 #cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow{cursor:pointer;}
-.cboxPhoto{float:left; margin:auto; border:0; display:block; max-width:none;}
-.cboxIframe{width:100%; height:100%; display:block; border:0;}
+.cboxPhoto{float:left; margin:auto; display:block; max-width:none;}
+.cboxIframe{width:100%; height:100%; display:block;}
 #colorbox, #cboxContent, #cboxLoadedContent{box-sizing:content-box;}
 
 /* 
@@ -320,14 +347,14 @@ div.start {
     Change the following styles to modify the appearance of ColorBox.  They are
     ordered & tabbed in a way that represents the nesting of the generated HTML.
 */
-#cboxOverlay{background:#fff;}
+#cboxOverlay{background:#000; opacity: 0.7 !important;}
 #colorbox{
     #cboxContent{margin-top:32px; overflow:visible;}
-        .cboxIframe{background:#fff;}
-        #cboxError{padding:50px; border:1px solid #ccc;}
+        .cboxIframe{background:#000;}
+        #cboxError{padding:50px;}
         #cboxLoadedContent{background:#000; padding:1px;}
         #cboxLoadingGraphic{background:url(images/loading.gif) no-repeat center center;}
-        #cboxLoadingOverlay{background:#000;}
+        //#cboxLoadingOverlay{background:#FFF;}
         #cboxTitle{position:absolute; top:-22px; left:0; color:#000;}
         #cboxCurrent{position:absolute; top:-22px; right:205px; text-indent:-9999px;}
         #cboxSlideshow, #cboxPrevious, #cboxNext, #cboxClose{text-indent:-9999px; width:20px; height:20px; position:absolute; top:-20px; background:url(images/controls.png) no-repeat 0 0;}

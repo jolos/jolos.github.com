@@ -1,18 +1,20 @@
 /*jslint indent: 2, browser: true */
 /*global define, jQuery, $*/
-define('views', ['backbone', 'underscore', 'mustache', 'q'],
-  function (Backbone, _, Mustache, Q) {
+define('views', ['backbone', 'underscore', 'mustache', 'q', 'templates'],
+  function (Backbone, _, Mustache, Q, templates) {
     'use strict';
     var module = function () {
       var Views = this;
 
-      // TODO: rename to StateMixin.
       this.StateMixin = (function () {
         var getCurrentState, setCurrentState, getPromisedState, setTransition, doTransition;
         getCurrentState = function () {
           return this.current_state;
         };
 
+        // Get a promise for the current state.
+        // This can be useful if there's a state transition going on, and you want
+        // to wait for this transition to finish before running your code.
         getPromisedState = function () {
           return this.promised_state;
         };
@@ -21,7 +23,9 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           this.current_state = state;
         };
 
-        // callback should always return a promise.
+        // Set a transition callback. This transition callback should always
+        // return a promise. ( If you're not doing asynchronous stuff, you
+        // can return a Q.fulfill )
         setTransition = function (start_state, end_state, callback) {
           if (($.inArray(start_state, this.states) !== -1 || start_state === '*') 
            && ($.inArray(end_state, this.states) !== -1) || end_state === '*') {
@@ -32,55 +36,48 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           }
         };
 
+        // Queue a state transition.
         doTransition = function (next_state, silent) {
-          var promise, transitions, that, successcallback, deferred, callback;
+          var promise, transitions, that, successcallback, deferred, callback, promised_state = this.getPromisedState(), getTransitionPromise;
           //transitions = this.transitions[this.getCurrentState()];
           that = this;
           console.time(this.cid + " " + this.getCurrentState() +"->"+ next_state);
 
-          var getTransitionPromise = function (state, next_state) {
-              var promise, transitions;
-              transitions = that.transitions[state];
-              if (transitions && transitions[next_state]) {
-                // Normal case, a transition callback is available.
-                callback = transitions[next_state];
-              } else if (that.transitions['*'][next_state]) {
-                // Check if there's a wildcard transition callback available.
-                callback = that.transitions['*'][next_state];
-              } else if (transitions && transitions['*']) {
-                // Check if there's a wildcard callback available for getting
-                // into the next state.
-                callback = transitions['*'];
-              } else {
-                // We couldn't find any statechange callback, this means this is
-                // an invalid transition.
-                console.log("err: " +state + ":" + next_state);
-                return Q.reject('invalid');
-              }
+          getTransitionPromise = function (state, next_state) {
+            var promise, transitions;
+            transitions = that.transitions[state];
+            if (transitions && transitions[next_state]) {
+              // Normal case, a transition callback is available.
+              callback = transitions[next_state];
+            } else if (that.transitions['*'][next_state]) {
+              // Check if there's a wildcard transition callback available.
+              callback = that.transitions['*'][next_state];
+            } else if (transitions && transitions['*']) {
+              // Check if there's a wildcard callback available for getting
+              // into the next state.
+              callback = transitions['*'];
+            } else {
+              // We couldn't find any statechange callback, this means this is
+              // an invalid transition.
+              console.log("err: " + state + ":" + next_state);
+              return Q.reject('invalid');
+            }
 
-              /*var d = Q.defer();
+            // We get the promise from the transition callback.
+            promise = callback.call(that);
 
-              promise = d.promise.then(function () {
-                return callback.call(that);
-              })*/
+            if (silent == undefined || silent == false) {
+              // Fire an event to warn listeners that a state transition has
+              // been started.
+              that.trigger('state:' + next_state, promise, state);
+            }
 
-              // We get the promise from the transition callback.
-              promise = callback.call(that);
-
-              if (silent == undefined || silent == false) {
-                // Fire an event to warn listeners that a state transition has
-                // been started.
-                that.trigger('state:' + next_state, promise, state);
-              }
-
-              return promise;
+            return promise;
           };
           
-          var promised_state = this.getPromisedState();
           if (promised_state.isPending()) {
             promise = promised_state.then(function (state) {
-              return getTransitionPromise(state, next_state)
-
+              return getTransitionPromise(state, next_state);
             });
             
             this.promised_state = promise
@@ -98,8 +95,6 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
               });
           }
         
-          // TODO: it might be usefull to return a deferred instead of a
-          // promise.
           return promise;
         };
 
@@ -111,7 +106,6 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           this.transitions = {
             '*' : {}
           };
-          //this.render = render;
           this.doTransition = doTransition;
           this.setTransition = setTransition;
           this.getCurrentState = getCurrentState;
@@ -121,7 +115,6 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         };
       })();
 
-      // TODO: StateView is deprecated.
       this.StateView = function (options) {
         Backbone.View.apply(this, [options]);
       };
@@ -133,17 +126,23 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
       this.StateMixin.call(this.StateView.prototype);
 
       this.StateView.prototype.render = function () {
-        var html, data, that = this, state = this.getCurrentState();
-        data = that.preprocess(that.model);
+        var html, template, data, state = this.getCurrentState();
+        data = this.preprocess(this.model);
         data.state = state;
         // use Mustache to render
-        if (that.template[state]) {
-          html = Mustache.render(that.template[state], data);
+        if (this.template[state]) {
+          template = this.template[state];
         } else {
-          html = Mustache.render(that.template.default_state, data);
+          template = this.template['default_state'];
+        }
+
+        if (typeof(template) == "function") {
+          html = template(data);
+        } else {
+          html = Mustache.render(template, data);
         }
         // replace the html of the element
-        $(that.el).html(html);
+        $(this.el).html(html);
         // return an instance of the view
         return this;
       };
@@ -154,7 +153,6 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         // TODO: add extra height to view to make it a multiple.
         //
         getHeight = function () {
-          console.log(this.$el.parent().innerHeight());
           return this.$el.parent().height();
         };
 
@@ -198,15 +196,6 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
             position: 'relative',
             overflow: 'hidden'
           });
-
-          /*
-          var that = this;
-          this.observer = new MutationObserver(function (mutations) {
-            console.log(mutations);
-          });
-
-          this.observer.observe(document.getElementById('sidebar-test'), {attributes : true});
-          */
         };
         
         return function () {
@@ -248,7 +237,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         },
         initialize : function () {
           this.view.on('change:page', this.render, this);
-          this.render(0,0);
+          this.render(0, 0);
 
         },
 
@@ -286,7 +275,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
             });
  
           }
-         return this.el;
+          return this.el;
         }
       });
 
@@ -411,12 +400,8 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         tagName: "section",
         // TODO: provide a way to have different icons for different types of
         // items.
-        template : {
-          closed : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
-          open : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
-          start : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>',
-          default_state : '<i class="gen-enclosed foundicon-plus"></i> <div class="title">{{title}}</div>'
-        },
+        template : templates.item,
+
         events : {
           'click .title' : 'onTitleClick'
         },
@@ -590,50 +575,57 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         }
       });
 
-      this.GistView = this.ArticleView.extend({
-        template : {
-              default : '<div class="row"><div class="three columns placeholder"></div><div class="nine columns title"><h4>{{title}}</h4><ul class="meta">{{#meta}}<li class="{{name}}">{{{value}}}</li>{{/meta}}</ul></div><div class="nine columns body">{{{body}}}</div></div></div>',
-        },
+      this.GistView = Backbone.View.extend({
+        template :  templates['gist']['default_state'],
 
         preprocess : function(model) {
-          var meta = [];
-          var created = model.get('created');
+          var meta = [], body = "";
+          /*var created = model.get('created');
           var updated = model.get('updated');
           meta.push({name : 'link', value: "<span> <a href='"+model.get('html_url')+"'>View at Github</a></span>"});
           meta.push({name : 'created', value: "<i class='foundicon-clock'></i><span> " +created.day + " / " + created.month + " / " + created.year + "</span>" });
           meta.push({name : 'updated', value: "<i class='foundicon-edit'></i> <span> " +updated.day + " / " + updated.month + " / " + updated.year  +"</span>"});
+          */
 
-          var body = "";
-          if (this.current_state != 'start') {
-            _.each(model.get('files'), function(file) {
-              switch(file.type) {
-                case 'text/plain' :
-                  body +=marked(file.content);
-                  break;
-                case 'text/html':
-                  body += file.content;
-                  break;
-                case 'image/png' :
-                  body += "<img src='" + file.raw_url + "/>";
-                  break;
-                default:
+          _.each(model.get('files'), function(file) {
+            switch(file.type) {
+              case 'text/plain' :
+                body +=marked(file.content);
+                break;
+              case 'text/html':
+                body += file.content;
+                break;
+              case 'image/png' :
+                body += "<img src='" + file.raw_url + "/>";
+                break;
+              default:
+                if (hljs && hljs.highlight) {
                   // @todo: check if file.language is supported
-                  body += "<hr/><pre>"+hljs.highlight(file.language.toLowerCase(), file.content).value+"</pre><hr/>";
-                  break;
-              }
-            });
-          }
+                  body += "<pre><code>"+hljs.highlight(file.language.toLowerCase(), file.content).value+"</code></pre>";
+                } else {
+                  body += "<pre><code>" + file.content + "</code></pre>";
+                }
+                break;
+            }
+          });
 
           return {
             title : model.get('title'),
-            body : body,
-            meta : meta
+            gist : body,
+            meta : meta,
+            url: model.get('html_url')
           };
         },
+
+        render: function () {
+          var context = this.preprocess(this.model);
+          $(this.el).html(this.template(context));
+          return this;
+        }
       });
 
       this.BlogView = Backbone.View.extend({
-        template : '<div class="blog">{{{blog}}}</div>',
+        template : templates.blog.default_state,
 
         initialize : function () {
           var that = this;
@@ -647,12 +639,9 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         },
 
         render : function () {
-          var data, html;
-          $('.header h1').html(this.model.get('title'));
-          data = this.preprocess(this.model);
-          html = Mustache.render(this.template, data);
+          var context = this.preprocess(this.model);
           // replace the html of the element
-          $(this.el).html(html);
+          $(this.el).html(this.template(context));
           //this.$('.body a').colorbox({rel: 'thumbnails'});
           // return an instance of the view
           return this;
@@ -671,10 +660,44 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
         },
       });
 
-      this.ScrollPagerMixin.call(this.BlogView.prototype);
+      //this.ScrollPagerMixin.call(this.BlogView.prototype);
+
+      this.HeaderView = Backbone.View.extend({
+        el: $('#header'),
+
+        template : templates.header.default_state,
+
+        render : function () {
+          var context = this.preprocess(this.model);
+          // replace the html of the element
+          $(this.el).html(this.template(context));
+          //this.$('.body a').colorbox({rel: 'thumbnails'});
+          // return an instance of the view
+          return this;
+        },
+
+        preprocess : function(model) {
+          var meta = [], context = {};
+          var created = model.get('created');
+          var description = model.get('description');
+
+          if (description) {
+            context.description = description;
+          }
+
+          if (created) {
+            context.created ="<span class='created'> " +created.day + "  /  " + created.month + "  /  " + created.year + "</span>";
+          }
+
+          context.title = model.get('title');
+          return context;
+        },
+      });
+
 
       this.InstaPaperView = Backbone.View.extend({
-        template :  '<div class="row instapaper"><div class="three columns"></div><div class="nine columns"><h4><a href="{{url}}"><i class="foundicon-star"></i> {{url_shortened}}</a></h4><p>{{title}} </p><p>{{{summary}}}</p></div></div>',
+        //template :  '<div class="row instapaper"><div class="three columns"></div><div class="nine columns"><h4><a href="{{url}}"><i class="foundicon-star"></i> {{url_shortened}}</a></h4><p>{{title}} </p><p>{{{summary}}}</p></div></div>',
+        template: templates.instapaper.default_state,
 
         events : {
           "click h4" : "track",
@@ -692,13 +715,11 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           this.$el.remove();
         },
 
-        render : function(){
-          var data, html;
-          data =this.preprocess(this.model)
-          // use Mustache to render
-          html = Mustache.render(this.template, data);
+        render : function () {
+          var context = this.preprocess(this.model);
           // replace the html of the element
-          $(this.el).html(html);
+          $(this.el).html(this.template(context));
+          //this.$('.body a').colorbox({rel: 'thumbnails'});
           // return an instance of the view
           return this;
         },
@@ -710,14 +731,15 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           var url_shortened = model.get('url');
           if (url_shortened.length > 40){
               url_shortened = url_shortened.substring(0,40) + " ... ";
-            }
-            return {
-              title : model.get('title'),
-              summary :  model.get('description'),
-              url : model.get('url'),
-              url_shortened : url_shortened,
-              created : created_str,
-            };
+          }
+          return {
+            title : model.get('title'),
+            content: model.get('content'),
+            summary :  model.get('description'),
+            url : model.get('url'),
+            url_shortened : url_shortened,
+            created : created_str,
+          };
           },
         });
 
@@ -777,6 +799,8 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
       this.MainView = this.StateView.extend({
         el: $('#main'),
 
+        template: templates['main'],  
+
         initialize : function () {
           this.states.push('loading');
           this.states.push('open');
@@ -785,7 +809,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           this.setTransition('*', 'loading', function () {
             var deferred = Q.defer();
             this.$el.fadeOut({
-              duration: 1000,
+              duration: 500,
               complete: function () {
                 deferred.resolve('empty');
               }
@@ -794,9 +818,10 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
           });
           
           this.setTransition('loading', '*', function () {
+            return Q.fulfill(this);
             var deferred = Q.defer();
             this.$el.fadeIn({
-              duration: 1000,
+              duration: 500,
               complete: function () {
                 deferred.resolve('empty');
               }
@@ -804,15 +829,19 @@ define('views', ['backbone', 'underscore', 'mustache', 'q'],
             return deferred.promise;
           });
         },
-     });
+        render : function () {
+         var html;
+          if (this.getCurrentState() == 'open') {
+            this.view = this.factory.getView(this.model);
+            html = this.view.render().el;
+          } else {
+            html = this.template[this.getCurrentState()]({});
+          }
 
-     this.MainView.prototype.render = function () {
-        this.view = this.factory.getView(this.model);
-        var html = this.view.render().el;
-        $(this.el).html(html);
-        return this;
-      };
- 
+          $(this.el).html(html);
+          return this;
+       }
+      });
 
       this.ItemListView = Backbone.View.extend({
         el : $('#items'),
