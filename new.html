@@ -15,9 +15,10 @@
 
 	<!-- Included CSS Files -->
 	<link rel="stylesheet" href="foundation/stylesheets/app.css">
+	<link rel="stylesheet" href="foundation/stylesheets/normalize.css">
+
         <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
         <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
-        <script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
         <!--<link href='skeleton/stylesheets/base.css' rel='stylesheet' type='text/css'>-->
         <!--<link href='skeleton/stylesheets/skeleton.css' rel='stylesheet' type='text/css'> -->
         <!--<link href='skeleton/stylesheets/layout.css' rel='stylesheet' type='text/css'>-->
@@ -122,7 +123,9 @@
           <div class="text">{{{gist}}}</div>
         </script>
 
-
+        <script class="template" data-view-name="page" data-state="default_state" type="text/x-handlebars-template">
+          <div class="text">{{{content}}}</div>
+        </script>
 
 	<!-- IE Fix for HTML5 Tags -->
 	<!--[if lt IE 9]>
@@ -131,21 +134,8 @@
 
 </head>
 <body>
-	<!--<div class="row">
-			<div class="large-12 columns">
-				<ul class="link-list">
-					<li><a href="#"><i class="foundicon-page"></i> Home</a></li>
-					<li><a href="#blogs"><i class="foundicon-mic"></i> Blogs</a></li>
-					<li><a href="#albums"><i class="foundicon-photo"></i> Albums</a></li>
-					<li><a href="#instapaper"><i class="foundicon-star"></i> Instapaper</a></li>
-					<li><a href="#about/me"><i class="foundicon-smiley"></i> About/me</a></li>
-					<li><a href="#type/gist"><i class="foundicon-idea"></i> Gists</a></li>
-				</ul>
-			</div>
-        </div>-->
-                <div class="row">
-
-             <div class="large-7 large-offset-1 columns">
+    <div class="row">
+             <div class="large-8 columns">
                <div class="row">
                   <div id="header" class="header">
                      <h1>Welkom</h1>
@@ -214,30 +204,6 @@
         </div>
         </div>
 
-
-        <!--<div class="row">
-          <div class ="large-9 columns">
-            <div class="row header">
-              <h1>Welkom</h1>
-            </div>
-            <div class="row">
-              <div id="main">
-              </div>
-            </div>
-          </div>
-        </div>
-	<div class="row">
-          <div class ="small-3 columns">
-          </div>
-          <div class="large-9 columns main-pane">
-          </div>
-        </div>-->
-	<footer>
-	<div class="canvascontainer" style="position : fixed; bottom: -30px; z-index : -1;">
-		<canvas id="sinus" height="130" width="1050"></canvas>  
-	</div>
-	</footer>
-
 	<!-- Included JS Files (Uncompressed) -->
 
 	<script src="javascripts/mustache.js"></script>
@@ -248,6 +214,8 @@
 
 	<script src="javascripts/marked.js"></script>
 	<script src="javascripts/jquery.colorbox-min.js"></script>
+
+        <script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
 
 <!--	
 	<script src="javascripts/foundation/jquery.foundation.reveal.js"></script>

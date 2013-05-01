@@ -745,7 +745,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q', 'templates'],
 
 
         this.PageView = Backbone.View.extend({
-          template : '<div class="row">----</div>',
+          template : templates.page.default_state,
 
           initialize : function(){
             this.model.bind('destroy', this.remove, this);
@@ -755,20 +755,15 @@ define('views', ['backbone', 'underscore', 'mustache', 'q', 'templates'],
             this.$el.remove();
           },
 
-          render : function(){
-            var data, html;
-            //data =this.preprocess(this.model)
-            // use Mustache to render
-            html = Mustache.render(this.template, {});
-            // replace the html of the element
-            $(this.el).html(html);
-            // return an instance of the view
+          render: function () {
+            var context = this.preprocess(this.model);
+            $(this.el).html(this.template(context));
             return this;
           },
 
           preprocess : function(model) {
             return {
-              content : 'content',
+              content : model.get('content'),
             };
           },
        });
