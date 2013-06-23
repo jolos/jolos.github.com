@@ -628,14 +628,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q', 'templates'],
         template : templates.blog.default_state,
 
         initialize : function () {
-          var that = this;
-          this.$el.mousewheel(function (event, d, dX, dY) {
-            if (dY < 0) {
-              that.nextPage();
-            } else if (dY > 0) {
-              that.prevPage();
-            }
-          });
+          var that = this;        
         },
 
         render : function () {
@@ -745,7 +738,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q', 'templates'],
 
 
         this.PageView = Backbone.View.extend({
-          template : '<div class="row">----</div>',
+          template : templates.page.default_state,
 
           initialize : function(){
             this.model.bind('destroy', this.remove, this);
@@ -755,20 +748,15 @@ define('views', ['backbone', 'underscore', 'mustache', 'q', 'templates'],
             this.$el.remove();
           },
 
-          render : function(){
-            var data, html;
-            //data =this.preprocess(this.model)
-            // use Mustache to render
-            html = Mustache.render(this.template, {});
-            // replace the html of the element
-            $(this.el).html(html);
-            // return an instance of the view
+          render: function () {
+            var context = this.preprocess(this.model);
+            $(this.el).html(this.template(context));
             return this;
           },
 
           preprocess : function(model) {
             return {
-              content : 'content',
+              content : model.get('content'),
             };
           },
        });
@@ -1034,7 +1022,7 @@ define('views', ['backbone', 'underscore', 'mustache', 'q', 'templates'],
             $(children[idx]).before(html);
           }
 
-          $(view.el).slideDown(1000, function () {
+          $(view.el).slideDown(400, function () {
             that.trigger('item:added');
           });
 

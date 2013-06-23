@@ -177,16 +177,18 @@ define('fetchers', ['q', 'underscore', 'models'],
                var promises = [];
                _.each(data.data, function(page) {
                    if (page.type=='file'){
-                     var page = new Models.Page({
+                     var parts = page.name.split('.'), 
+                         title = Array.join(parts.slice(0, parts.length - 1), ' ');
+                         //title = title.replace('-', ' ');
+                         page = new Models.Page({
+                       title: title.charAt(0).toUpperCase() + title.slice(1),
                        name : page.name,
                        path : page.path,
                        url : page._links.self,
                        giturl : page._links.git, 
                      });
                      
-                     promises.push(Q.when(
-                      page.fetch()
-                     ));
+                     promises.push(Q.fulfill(page));
                    }
                });
               return promises;

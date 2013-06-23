@@ -69,7 +69,7 @@ define('main', ['backbone', 'underscore', 'q'],
             pane.render();
             pane.factory = factory;
             var headerview = new Views.HeaderView;
-            that.appview.bind('state:open', function(promise, prev_state) {
+            that.appview.bind('state:open', function (promise, prev_state) {
               var view = this;
               promise.then(function (activeitem) {
                 var model = activeitem.model;
@@ -89,11 +89,26 @@ define('main', ['backbone', 'underscore', 'q'],
                 });
               });
            }, pane);
+
+
             that.bind('route:default', that.items.clean, that.items);
             // TODO: move to ItemListView
             that.items.filteredItems.bind('add', that.appview.addItem, that.appview);
             // render the items.
             that.items.filteredItems.each(that.appview.addItem, that.appview);
+
+            var lock = false;
+            that.items.filteredItems.bind('add', function () {
+                if (!lock) {
+                  lock = true;
+                  setTimeout(function () {
+                    lock = false;
+                    if (that.appview.views.length == 1)  {
+                      that.appview.views[0].doTransition('open');  
+                    }                  
+                  }, 500); 
+                }
+            });
 
           });
         },
