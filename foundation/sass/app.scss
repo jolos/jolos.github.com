@@ -45,7 +45,7 @@
 // @import "foundation/components/dropdown";
 
 .icons {
-  font-size: 40px;
+  font-size: 30px;
   margin-top: 0.5em;
   text-align: center;
 }
@@ -208,12 +208,12 @@ div.start {
       font-size: 1.5em;
     }
 
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     .title {
       width: 90%;
       margin-left: 0.2em;
       padding-left: 0.5em;
-      padding-bottom: 42px;
+      padding-bottom: 30px;
       display: inline-block;
       border-bottom-style: dashed;
       border-color: $customlightgrey2;
@@ -221,7 +221,7 @@ div.start {
 
       font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
       font-weight: 400;
-      font-size: 1.8em;
+      font-size: 1.3em;
       height: 1em;
       letter-spacing: -1.3px;
       cursor: pointer;
@@ -266,13 +266,13 @@ div.start {
 }
 
 .header {
-  margin-left: 4em;
+  margin-left: 1em;
   min-height: 150px;
   h1 {
     color: $customdarkgrey; //$customdarkgrey
     font-weight: 200;
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
-    font-size: 4em;
+    font-size: 3em;
     //margin-top: 1e.em;
     margin-bottom: 0;
     letter-spacing: -5px;
@@ -283,8 +283,8 @@ div.start {
     color: $customdarkgrey; //$customdarkgrey
     font-weight: 200;
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
-    font-size: 1.5em;
-    margin-left: 1.5em;
+    font-size: 1.2em;
+    margin-left: 1.2em;
   }
 }
 
@@ -306,12 +306,12 @@ div.start {
   .text {
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
     color: $text; //#444444
-    font-size: 1.3em;
+    font-size: 1.0em;
     text-align: justify;
 
     h2 {
       font-weight: 400;
-      font-size: 1.5em;
+      font-size: 1.3em;
     }
   }
 
