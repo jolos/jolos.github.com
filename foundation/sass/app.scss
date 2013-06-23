@@ -1,19 +1,18 @@
 // Global Foundation Settings
 @import "settings";
+@import "colors";
 
 // Comment out this import if you are customizing you imports below
-@import "foundation";
+//@import "foundation";
 
 // Import specific parts of Foundation by commenting the import "foundation"
 // and uncommenting what you want below. You must uncomment the following if customizing
 
-@import "foundation/foundation-global"; // *always required
-@import "foundation/components/global"; // *always required
-@import "foundation/components/grid";
-@import "foundation/components/visibility";
-
+ @import "foundation/components/global"; // *always required
+ @import "foundation/components/grid";
+ @import "foundation/components/visibility";
 // @import "foundation/components/block-grid";
-// @import "foundation/components/type";
+ @import "foundation/components/type";
 // @import "foundation/components/buttons";
 // @import "foundation/components/forms"; // *requires components/buttons
 // @import "foundation/components/custom-forms"; // *requires components/buttons, components/forms
@@ -33,7 +32,7 @@
 // @import "foundation/components/labels";
 // @import "foundation/components/inline-lists";
 // @import "foundation/components/pagination";
-// @import "foundation/components/panels";
+ @import "foundation/components/panels";
 // @import "foundation/components/pricing-tables";
 // @import "foundation/components/progress-bars";
 // @import "foundation/components/side-nav";
@@ -138,7 +137,7 @@ ul.link-list  {
 
 .title {
 	h4 {
-		color : #FF6633;
+		color : $text;
 		font-weight: 300;
 		font-size: 300;
 		cursor : pointer;
@@ -155,7 +154,7 @@ div.open {
 .instapaper h4{
        	 a:hover,a {
 		font-weight: 400;
-		color : #FF6633;
+		color : $text;
 	}
 }
 
@@ -203,7 +202,7 @@ div.start {
   //width: 460px;
   section {
         //color: #FF6633;
-    color: #6E6E6E;
+    color: $customlightgrey2;
     //overflow: hidden;
     i {
       font-size: 1.5em;
@@ -217,7 +216,7 @@ div.start {
       padding-bottom: 42px;
       display: inline-block;
       border-bottom-style: dashed;
-      border-color: #E6E6E6;
+      border-color: $customlightgrey2;
       border-width: 1px;
 
       font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
@@ -231,12 +230,12 @@ div.start {
   }
 
   section.open {
-    color: #FF6633;
+    color: $orange;
   }
 }
 
 .item-pager {
-   color: #FF6633;
+   color: $orange;
    font-size: 3em;
    //text-align: center;
    padding-bottom: 1em;
@@ -252,7 +251,7 @@ div.start {
    }
 
    a {
-    color: #6E6E6E;
+    color: $customlightgrey2;
     font-weight: 100;
    }
 
@@ -262,26 +261,26 @@ div.start {
    }
 
    a.active:hover {
-     color: #FF6633;
+     color: $orange;
    }
 }
 
 .header {
-  height: 200px;
+  margin-left: 4em;
+  min-height: 150px;
   h1 {
-    color: #666666;
+    color: $customdarkgrey; //$customdarkgrey
     font-weight: 200;
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
-    line-height: 1.5em;
     font-size: 4em;
     //margin-top: 1e.em;
-    margin-bottom: 0.2em;
+    margin-bottom: 0;
     letter-spacing: -5px;
 
   }
 
  .description {
-    color: #666666;
+    color: $customdarkgrey; //$customdarkgrey
     font-weight: 200;
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
     font-size: 1.5em;
@@ -306,7 +305,7 @@ div.start {
   float: right;
   .text {
     font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
-    color: #444444;
+    color: $text; //#444444
     font-size: 1.3em;
     text-align: justify;
 
@@ -319,6 +318,10 @@ div.start {
   code {
     @include panel;
     @include radius;
+  }
+
+  a {
+    color: $link;
   }
 
   code {
