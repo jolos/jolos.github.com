@@ -1,0 +1,114 @@
+.title {
+  font-size: 4rem;
+  margin-bottom: 4rem;
+  text-align: center;
+}
+
+hr {
+    margin-bottom: 5.5rem;
+    margin-top: 5.5rem;
+}
+
+ul {
+    margin-left: 2.5rem;
+}
+
+body {
+    text-align: justify;
+    font-size: 1.7em;
+    line-height: 2em;
+}
+
+.to-infinity-and-beyond {
+    font-size: 5.0em;
+    text-align: center;
+}
+
+.fancybox-skinned {
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+
+.album-photos {
+    width: 640;
+    text-align: center;
+}
+
+.album-photos img {
+    margin-right: 10px;
+}
+
+.album-body {
+    text-align: center;
+}
+
+.intro {
+    margin-top: 5.5rem;
+}
+
+html {
+  border-top: 3em solid #EDEDED;
+  border-bottom: 9rem solid #EDEDED;
+}
+
+.ruler {
+  padding-top: 5.5rem;
+}
+.ruler hr{
+  margin-top: 0;
+  width: 30%;
+  transition:width 2s
+}
+
+.ruler:hover hr{
+  width: 100%;
+}
+
+.section-header {
+  margin-top: -5rem;
+  text-align: right;
+}
+
+.me {
+      margin-top: 3rem;
+      width: 200px;
+      height: 200px;
+      background: url(https://farm8.staticflickr.com/7553/buddyicons/130366920@N04_r.jpg?1420023584) no-repeat;
+      border-radius: 150px;
+      -webkit-border-radius: 150px;
+      -moz-border-radius: 150px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, .8);
+      -webkit-box-shadow: 0 0 8px rgba(0, 0, 0, .8);
+      -moz-box-shadow: 0 0 8px rgba(0, 0, 0, .8);
+      background-size: 200px 200px;
+  }
+
+.links a {
+  color: #000000;
+  font-size: 15rem;
+  transition: color 2s;
+}
+
+.links a:hover {
+  color: #E1E1E1;
+  transition: color 0.5s;
+}
+
+.links {
+  margin-bottom: 2rem;
+}
+
+.date {
+  text-align: center;
+  font-size: 3rem;
+  color: #E1E1E1;
+  margin-bottom: 4rem;
+}
+.date i {
+  margin-right: 1rem;
+}
+
+.item .title {
+  margin-bottom: 1rem;
+}
+
